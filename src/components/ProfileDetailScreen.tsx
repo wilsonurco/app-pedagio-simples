@@ -1,10 +1,16 @@
 import { router, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
 
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
+import {
+  ChevronRight,
+  detailScreenIcons,
+  iconSize,
+  iconStroke,
+  type DetailScreenIconName,
+} from '@/components/ui/icons';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -16,12 +22,13 @@ export type DetailListItem = {
 type DetailScreenProps = {
   title: string;
   description: string;
-  icon: keyof typeof MaterialIcons.glyphMap;
+  icon: DetailScreenIconName;
   items?: (string | DetailListItem)[];
 };
 
 export function ProfileDetailScreen({ title, description, icon, items = [] }: DetailScreenProps) {
   const insets = useSafeAreaInsets();
+  const HeaderIcon = detailScreenIcons[icon];
 
   return (
     <ScrollView
@@ -37,7 +44,7 @@ export function ProfileDetailScreen({ title, description, icon, items = [] }: De
 
       <View style={styles.card}>
         <View style={styles.iconWrap}>
-          <MaterialIcons name={icon} size={24} color={colors.tint} />
+          <HeaderIcon size={iconSize.md} color={colors.tint} strokeWidth={iconStroke} />
         </View>
         {items.map((item, index) => {
           const label = typeof item === 'string' ? item : item.label;
@@ -48,7 +55,7 @@ export function ProfileDetailScreen({ title, description, icon, items = [] }: De
             <>
               <Text style={styles.rowText}>{label}</Text>
               {route ? (
-                <MaterialIcons name="chevron-right" size={20} color={colors.tertiaryLabel} />
+                <ChevronRight size={iconSize.sm} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
               ) : null}
             </>
           );

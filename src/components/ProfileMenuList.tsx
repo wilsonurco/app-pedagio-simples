@@ -1,7 +1,12 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 
+import {
+  ChevronRight,
+  iconSize,
+  iconStroke,
+  profileMenuIcons,
+} from '@/components/ui/icons';
 import { profileMenuItems } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -9,25 +14,29 @@ import { fonts } from '@/theme/typography';
 export function ProfileMenuList() {
   return (
     <View style={styles.card}>
-      {profileMenuItems.map((item, index) => (
-        <Pressable
-          key={item.id}
-          onPress={() => router.push(item.route)}
-          accessibilityRole="button"
-          accessibilityLabel={item.label}
-          style={({ pressed }) => [
-            styles.row,
-            index < profileMenuItems.length - 1 && styles.divider,
-            pressed && styles.pressed,
-          ]}
-        >
-          <View style={styles.iconWrap}>
-            <MaterialIcons name={item.icon} size={20} color={colors.tint} />
-          </View>
-          <Text style={styles.label}>{item.label}</Text>
-          <MaterialIcons name="chevron-right" size={20} color={colors.tertiaryLabel} />
-        </Pressable>
-      ))}
+      {profileMenuItems.map((item, index) => {
+        const Icon = profileMenuIcons[item.icon];
+
+        return (
+          <Pressable
+            key={item.id}
+            onPress={() => router.push(item.route)}
+            accessibilityRole="button"
+            accessibilityLabel={item.label}
+            style={({ pressed }) => [
+              styles.row,
+              index < profileMenuItems.length - 1 && styles.divider,
+              pressed && styles.pressed,
+            ]}
+          >
+            <View style={styles.iconWrap}>
+              <Icon size={iconSize.sm} color={colors.tint} strokeWidth={iconStroke} />
+            </View>
+            <Text style={styles.label}>{item.label}</Text>
+            <ChevronRight size={iconSize.sm} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
+          </Pressable>
+        );
+      })}
     </View>
   );
 }

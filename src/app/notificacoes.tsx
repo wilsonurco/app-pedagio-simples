@@ -5,7 +5,7 @@ export default function NotificationsSettingsScreen() {
     <ProfileDetailScreen
       title="Notificações"
       description="Escolha o que você quer receber"
-      icon="notifications-none"
+      icon="bell"
       items={[
         'Pagamentos e cobranças',
         'Novas passagens',

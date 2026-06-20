@@ -1,9 +1,9 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 
 import { ProfileMenuList } from '@/components/ProfileMenuList';
 import { ScreenTitle } from '@/components/ScreenTitle';
+import { Car, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
 import { userProfile } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -39,7 +39,7 @@ export default function ProfileScreen() {
       {/* 3. Card do veículo */}
       <View style={styles.vehicleCard}>
         <View style={styles.vehicleIcon}>
-          <MaterialCommunityIcons name="car" size={22} color={colors.tint} />
+          <Car size={22} color={colors.tint} strokeWidth={iconStroke} />
         </View>
         <View style={styles.userInfo}>
           <Text style={styles.userName}>
@@ -58,7 +58,7 @@ export default function ProfileScreen() {
         accessibilityLabel="Sair da conta"
         style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
       >
-        <MaterialIcons name="logout" size={20} color={colors.systemRed} />
+        <LogOut size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
         <Text style={styles.logoutText}>Sair da conta</Text>
       </Pressable>
     </ScrollView>

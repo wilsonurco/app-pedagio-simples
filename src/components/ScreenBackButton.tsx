@@ -1,24 +1,31 @@
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 
+import { ChevronLeft, iconSize, iconStroke } from '@/components/ui/icons';
+import { navigateBack } from '@/utils/navigation';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type ScreenBackButtonProps = {
   label?: string;
+  fallback?: Href;
+  fallbackParams?: Record<string, string | undefined>;
 };
 
-export function ScreenBackButton({ label = 'Perfil' }: ScreenBackButtonProps) {
+export function ScreenBackButton({
+  label = 'Perfil',
+  fallback,
+  fallbackParams,
+}: ScreenBackButtonProps) {
   return (
     <Pressable
-      onPress={() => router.back()}
+      onPress={() => navigateBack({ fallback, params: fallbackParams })}
       accessibilityRole="button"
       accessibilityLabel={`Voltar para ${label}`}
       hitSlop={8}
       style={({ pressed }) => [styles.button, pressed && styles.pressed]}
     >
-      <MaterialIcons name="chevron-left" size={28} color={colors.tint} />
+      <ChevronLeft size={iconSize.lg} color={colors.tint} strokeWidth={iconStroke} />
       <Text style={styles.label}>{label}</Text>
     </Pressable>
   );

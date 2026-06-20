@@ -5,7 +5,7 @@ export default function HelpScreen() {
     <ProfileDetailScreen
       title="Ajuda e suporte"
       description="Tire dúvidas e fale com a gente"
-      icon="help-outline"
+      icon="help"
       items={[
         'Perguntas frequentes',
         'Falar com suporte',

@@ -1,31 +1,49 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { ChevronRight, iconSize, iconStroke } from '@/components/ui/icons';
+import { usePassages } from '@/context/PassagesContext';
 import { formatBRL } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type PendingCardProps = {
-  amount: number;
   dueLabel?: string;
 };
 
-export function PendingCard({ amount, dueLabel = 'Vence em 3 dias' }: PendingCardProps) {
+export function PendingCard({ dueLabel = 'Vence em 3 dias' }: PendingCardProps) {
+  const { pendingPassages, pendingTotal } = usePassages();
+  const count = pendingPassages.length;
+
   return (
-    <View style={styles.card}>
+    <Pressable
+      onPress={() => router.push('/pagar')}
+      accessibilityRole="button"
+      accessibilityLabel={`${count} passagens pendentes, total ${formatBRL(pendingTotal)}`}
+      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+    >
       <View style={styles.row}>
-        <Text style={styles.label}>Pendente</Text>
+        <View>
+          <Text style={styles.label}>Pendente</Text>
+          <Text style={styles.count}>
+            {count} {count === 1 ? 'passagem' : 'passagens'}
+          </Text>
+        </View>
         <View style={styles.statusPill}>
           <Text style={styles.statusText}>{dueLabel}</Text>
         </View>
       </View>
 
-      <Text
-        style={styles.amount}
-        accessibilityLabel={`Valor pendente de ${formatBRL(amount)}`}
-      >
-        {formatBRL(amount)}
-      </Text>
-    </View>
+      <View style={styles.footer}>
+        <Text
+          style={styles.amount}
+          accessibilityLabel={`Valor pendente de ${formatBRL(pendingTotal)}`}
+        >
+          {formatBRL(pendingTotal)}
+        </Text>
+        <ChevronRight size={iconSize.sm} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
+      </View>
+    </Pressable>
   );
 }
 
@@ -36,15 +54,24 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.sm,
   },
+  pressed: {
+    opacity: 0.6,
+  },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
   label: {
     ...fonts.regular,
     fontSize: fontSize.subheadline,
     color: colors.secondaryLabel,
+  },
+  count: {
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.tertiaryLabel,
+    marginTop: 2,
   },
   statusPill: {
     backgroundColor: 'rgba(255, 149, 0, 0.12)',
@@ -56,6 +83,11 @@ const styles = StyleSheet.create({
     ...fonts.medium,
     fontSize: fontSize.caption,
     color: colors.systemOrange,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   amount: {
     ...fonts.bold,

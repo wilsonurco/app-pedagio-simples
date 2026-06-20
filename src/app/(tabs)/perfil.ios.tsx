@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text as RNText, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { Button, List, Section } from '@expo/ui/swift-ui';
 import { listStyle } from '@expo/ui/swift-ui/modifiers';
 
+import { Car, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
 import { ScreenHost } from '@/components/ios/ScreenHost';
 import { profileMenuItems, userProfile } from '@/data/mock';
 import { colors, fontSize, spacing } from '@/theme/tokens';
@@ -12,9 +12,9 @@ import { fonts } from '@/theme/typography';
 
 const SF_ICONS = {
   'credit-card': 'creditcard',
-  'directions-car': 'car',
-  'notifications-none': 'bell',
-  'help-outline': 'questionmark.circle',
+  car: 'car',
+  bell: 'bell',
+  help: 'questionmark.circle',
 } as const;
 
 export default function ProfileScreen() {
@@ -45,7 +45,7 @@ export default function ProfileScreen() {
 
       <View style={styles.vehicleCard}>
         <View style={styles.vehicleIcon}>
-          <MaterialCommunityIcons name="car" size={22} color={colors.tint} />
+          <Car size={22} color={colors.tint} strokeWidth={iconStroke} />
         </View>
         <View style={styles.userInfo}>
           <RNText style={styles.userName}>
@@ -75,7 +75,7 @@ export default function ProfileScreen() {
         accessibilityLabel="Sair da conta"
         style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
       >
-        <MaterialIcons name="logout" size={20} color={colors.systemRed} />
+        <LogOut size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
         <RNText style={styles.logoutText}>Sair da conta</RNText>
       </Pressable>
     </ScrollView>

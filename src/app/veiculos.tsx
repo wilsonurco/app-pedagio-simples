@@ -8,7 +8,7 @@ export default function VehiclesScreen() {
     <ProfileDetailScreen
       title="Meus veículos"
       description="Veículos cadastrados na sua conta"
-      icon="directions-car"
+      icon="car"
       items={[
         `${vehicle.model} • ${vehicle.plate}`,
         vehicle.category,

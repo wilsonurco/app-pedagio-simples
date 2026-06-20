@@ -21,7 +21,7 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 
 import { ScreenHost } from '@/components/ios/ScreenHost';
-import { alerts, formatBRL, history, pendingAmount } from '@/data/mock';
+import { formatBRL, history, pendingAmount } from '@/data/mock';
 import { colors, spacing } from '@/theme/tokens';
 
 const TINT = tintModifier(colors.tint);
@@ -64,16 +64,6 @@ export default function HomeScreen() {
               modifiers={[frame({ height: 140 })]}
             />
           </Section>
-
-          <Section title="Alertas">
-            {alerts.slice(0, 2).map((alert) => (
-              <LabeledContent key={alert.id} label={alert.title}>
-                <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'secondary' })]}>
-                  {alert.description}
-                </Text>
-              </LabeledContent>
-            ))}
-          </Section>
         </List>
       </ScreenHost>
 
@@ -98,8 +88,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
-    backgroundColor: colors.secondaryBackground,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.separator,
+    backgroundColor: colors.groupedBackground,
   },
 });

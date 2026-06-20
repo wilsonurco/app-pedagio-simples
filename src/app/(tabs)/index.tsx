@@ -2,16 +2,19 @@ import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AlertsList } from '@/components/AlertsList';
 import { Header } from '@/components/Header';
 import { HistoryChart } from '@/components/HistoryChart';
 import { PayButton } from '@/components/PayButton';
 import { PendingCard } from '@/components/PendingCard';
-import { alerts, pendingAmount } from '@/data/mock';
+import { TransactionList } from '@/components/TransactionList';
+import { usePassages } from '@/context/PassagesContext';
 import { colors, spacing } from '@/theme/tokens';
+import { buildMonthlyHistory } from '@/utils/history';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { pendingPassages, passages } = usePassages();
+  const monthlyHistory = buildMonthlyHistory(passages);
 
   return (
     <View style={styles.container}>
@@ -25,15 +28,22 @@ export default function HomeScreen() {
         <Header onPressNotifications={() => router.push('/alertas')} />
 
         <View style={styles.stack}>
-          <PendingCard amount={pendingAmount} />
-          <HistoryChart />
-          <AlertsList data={alerts.slice(0, 2)} />
+          <PendingCard />
+          {pendingPassages.length > 0 ? (
+            <TransactionList filter="pending" title="Passagens pendentes" />
+          ) : null}
+          <HistoryChart
+            data={monthlyHistory}
+            onPressDetail={() => router.push('/historico')}
+          />
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: spacing.sm }]}>
-        <PayButton onPress={() => router.push('/pagar')} />
-      </View>
+      {pendingPassages.length > 0 ? (
+        <View style={[styles.footer, { paddingBottom: spacing.sm }]}>
+          <PayButton onPress={() => router.push('/pagar')} />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -53,8 +63,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
-    backgroundColor: colors.secondaryBackground,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.separator,
+    backgroundColor: colors.groupedBackground,
   },
 });

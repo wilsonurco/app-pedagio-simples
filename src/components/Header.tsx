@@ -1,10 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Platform } from 'react-native';
-import { SymbolView } from 'expo-symbols';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
-import { fonts } from '@/theme/typography';
+import { Bell, iconSize, iconStroke } from '@/components/ui/icons';
+import { colors, spacing } from '@/theme/tokens';
+
+const logo = require('@/assets/images/logo-pedagio-simples.png');
 
 type HeaderProps = {
   onPressNotifications?: () => void;
@@ -14,16 +14,12 @@ type HeaderProps = {
 export function Header({ onPressNotifications, hasUnread = true }: HeaderProps) {
   return (
     <View style={styles.container}>
-      <View style={styles.brand}>
-        <View style={styles.logo}>
-          {Platform.OS === 'ios' ? (
-            <SymbolView name="road.lanes" size={18} tintColor={colors.onTint} weight="semibold" />
-          ) : (
-            <MaterialCommunityIcons name="boom-gate" size={20} color={colors.onTint} />
-          )}
-        </View>
-        <Text style={styles.title}>Pedágio Simples</Text>
-      </View>
+      <Image
+        source={logo}
+        style={styles.logo}
+        contentFit="contain"
+        accessibilityLabel="pedágio simples"
+      />
 
       <Pressable
         onPress={onPressNotifications}
@@ -32,11 +28,7 @@ export function Header({ onPressNotifications, hasUnread = true }: HeaderProps) 
         hitSlop={12}
         style={({ pressed }) => [styles.bell, pressed && styles.bellPressed]}
       >
-        {Platform.OS === 'ios' ? (
-          <SymbolView name="bell" size={22} tintColor={colors.label} />
-        ) : (
-          <MaterialIcons name="notifications-none" size={24} color={colors.label} />
-        )}
+        <Bell size={iconSize.md} color={colors.label} strokeWidth={iconStroke} />
         {hasUnread && <View style={styles.badge} />}
       </Pressable>
     </View>
@@ -50,23 +42,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.sm,
   },
-  brand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
   logo: {
-    width: 36,
     height: 36,
-    borderRadius: radius.md,
-    backgroundColor: colors.tint,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    ...fonts.bold,
-    fontSize: fontSize.title3,
-    color: colors.label,
+    width: 180,
   },
   bell: {
     width: 44,

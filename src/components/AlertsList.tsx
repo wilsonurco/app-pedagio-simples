@@ -1,18 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { alertIcons, iconSize, iconStroke } from '@/components/ui/icons';
 import { alerts, type AlertItem } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type AlertsListProps = {
   data?: AlertItem[];
-};
-
-const ICONS: Record<AlertItem['type'], keyof typeof MaterialIcons.glyphMap> = {
-  info: 'info-outline',
-  warning: 'warning-amber',
-  danger: 'error-outline',
 };
 
 const ICON_COLORS: Record<AlertItem['type'], string> = {
@@ -22,26 +17,65 @@ const ICON_COLORS: Record<AlertItem['type'], string> = {
 };
 
 export function AlertsList({ data = alerts }: AlertsListProps) {
+  function handlePress(item: AlertItem) {
+    if (item.passageId) {
+      router.push(`/passagem/${item.passageId}`);
+      return;
+    }
+    if (item.type === 'warning') {
+      router.push('/pagar');
+    }
+  }
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Alertas</Text>
 
       <View>
-        {data.map((item, index) => (
-          <View
-            key={item.id}
-            style={[styles.item, index < data.length - 1 && styles.itemDivider]}
-          >
-            <View style={[styles.iconWrap, { backgroundColor: `${ICON_COLORS[item.type]}18` }]}>
-              <MaterialIcons name={ICONS[item.type]} size={20} color={ICON_COLORS[item.type]} />
-            </View>
-            <View style={styles.itemText}>
-              <Text style={styles.itemTitle}>{item.title}</Text>
-              <Text style={styles.itemDescription}>{item.description}</Text>
-              <Text style={styles.itemDate}>{item.date}</Text>
-            </View>
-          </View>
-        ))}
+        {data.map((item, index) => {
+          const Icon = alertIcons[item.type];
+          const isInteractive = Boolean(item.passageId) || item.type === 'warning';
+
+          const content = (
+            <>
+              <View style={[styles.iconWrap, { backgroundColor: `${ICON_COLORS[item.type]}18` }]}>
+                <Icon size={iconSize.sm} color={ICON_COLORS[item.type]} strokeWidth={iconStroke} />
+              </View>
+              <View style={styles.itemText}>
+                <Text style={styles.itemTitle}>{item.title}</Text>
+                <Text style={styles.itemDescription}>{item.description}</Text>
+                <Text style={styles.itemDate}>{item.date}</Text>
+              </View>
+            </>
+          );
+
+          if (!isInteractive) {
+            return (
+              <View
+                key={item.id}
+                style={[styles.item, index < data.length - 1 && styles.itemDivider]}
+              >
+                {content}
+              </View>
+            );
+          }
+
+          return (
+            <Pressable
+              key={item.id}
+              onPress={() => handlePress(item)}
+              accessibilityRole="button"
+              accessibilityLabel={item.title}
+              style={({ pressed }) => [
+                styles.item,
+                index < data.length - 1 && styles.itemDivider,
+                pressed && styles.pressed,
+              ]}
+            >
+              {content}
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -68,6 +102,9 @@ const styles = StyleSheet.create({
   itemDivider: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.separator,
+  },
+  pressed: {
+    opacity: 0.6,
   },
   iconWrap: {
     width: 36,

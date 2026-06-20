@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Car, Check, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
 
 import { FormField } from '@/components/FormField';
 import { PayButton } from '@/components/PayButton';
@@ -45,7 +45,7 @@ export default function VehicleRegistrationScreen() {
     return (
       <View style={[styles.container, styles.center, { paddingTop: insets.top }]}>
         <View style={styles.successIcon}>
-          <MaterialIcons name="check" size={44} color={colors.onTint} />
+          <Check size={iconSize.xl} color={colors.onTint} strokeWidth={iconStroke} />
         </View>
         <Text style={styles.successTitle}>Veículo cadastrado</Text>
         <Text style={styles.successSubtitle}>
@@ -120,7 +120,7 @@ export default function VehicleRegistrationScreen() {
                   {category.label}
                 </Text>
                 {isActive ? (
-                  <MaterialIcons name="check" size={20} color={colors.tint} />
+                  <Check size={iconSize.sm} color={colors.tint} strokeWidth={iconStroke} />
                 ) : null}
               </Pressable>
             );

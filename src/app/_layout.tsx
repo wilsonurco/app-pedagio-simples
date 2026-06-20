@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { PassagesProvider } from '@/context/PassagesContext';
 import { colors } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -16,6 +17,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
+      <PassagesProvider>
       <StatusBar style={Platform.OS === 'ios' ? 'dark' : 'dark'} />
       <Stack
         screenOptions={{
@@ -30,12 +32,21 @@ export default function RootLayout() {
             presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
           }}
         />
+        <Stack.Screen
+          name="pagar-forma"
+          options={{
+            presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+            gestureEnabled: true,
+          }}
+        />
         <Stack.Screen name="formas-pagamento" options={{ presentation: 'card', gestureEnabled: true }} />
         <Stack.Screen name="veiculos" options={{ presentation: 'card', gestureEnabled: true }} />
         <Stack.Screen name="cadastro-veiculo" options={{ presentation: 'card', gestureEnabled: true }} />
         <Stack.Screen name="notificacoes" options={{ presentation: 'card', gestureEnabled: true }} />
         <Stack.Screen name="ajuda" options={{ presentation: 'card', gestureEnabled: true }} />
+        <Stack.Screen name="passagem/[id]" options={{ presentation: 'card', gestureEnabled: true }} />
       </Stack>
+      </PassagesProvider>
     </SafeAreaProvider>
   );
 }
