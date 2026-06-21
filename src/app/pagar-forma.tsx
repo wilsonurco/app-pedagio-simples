@@ -45,7 +45,7 @@ export default function PaymentMethodScreen() {
     if (selectedIds.length === 0) return;
     setStatus('processing');
     setTimeout(() => {
-      markAsPaid(selectedIds);
+      markAsPaid(selectedIds, selectedMethodLabel);
       setStatus('success');
     }, 1400);
   }

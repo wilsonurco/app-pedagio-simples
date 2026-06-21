@@ -1,7 +1,9 @@
 import { Tabs } from 'expo-router';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { iconSize, iconStroke, iconStrokeActive, tabIcons } from '@/components/ui/icons';
-import { colors } from '@/theme/tokens';
+import { colors, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 function TabIcon({
@@ -25,6 +27,9 @@ function TabIcon({
 }
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const webTabBarInset = Platform.OS === 'web' ? Math.max(insets.bottom, spacing.sm) : 0;
+
   return (
     <Tabs
       screenOptions={{
@@ -35,6 +40,12 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopWidth: 0,
+          ...(Platform.OS === 'web'
+            ? {
+                paddingBottom: webTabBarInset,
+                height: 56 + webTabBarInset,
+              }
+            : {}),
         },
         sceneStyle: { backgroundColor: colors.groupedBackground },
       }}

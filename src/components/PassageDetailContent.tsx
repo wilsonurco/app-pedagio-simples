@@ -4,7 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PassageTypeBadge } from '@/components/PassageTypeBadge';
 import { PayButton } from '@/components/PayButton';
+import { ReceiptActions } from '@/components/ReceiptActions';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
+import { generateReceiptId } from '@/utils/receiptHtml';
 import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -113,6 +115,21 @@ export function PassageDetailContent({ passage }: PassageDetailContentProps) {
               <DetailRow label="Pagamento" value={passage.paidAt} />
             </>
           ) : null}
+          {passage.paymentMethod ? (
+            <>
+              <View style={styles.divider} />
+              <DetailRow label="Forma de pagamento" value={passage.paymentMethod} />
+            </>
+          ) : null}
+          {passage.receiptId || !isPending ? (
+            <>
+              <View style={styles.divider} />
+              <DetailRow
+                label="Nº do comprovante"
+                value={passage.receiptId ?? generateReceiptId(passage.passageId)}
+              />
+            </>
+          ) : null}
         </View>
       </View>
 
@@ -126,7 +143,9 @@ export function PassageDetailContent({ passage }: PassageDetailContentProps) {
             })
           }
         />
-      ) : null}
+      ) : (
+        <ReceiptActions passage={passage} />
+      )}
     </ScrollView>
   );
 }

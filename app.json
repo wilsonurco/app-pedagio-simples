@@ -22,7 +22,14 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Pedágio Simples",
+      "shortName": "Pedágio Simples",
+      "display": "standalone",
+      "themeColor": "#5B2E8C",
+      "backgroundColor": "#F2F2F7",
+      "lang": "pt-BR",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-router",
@@ -35,7 +42,8 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,

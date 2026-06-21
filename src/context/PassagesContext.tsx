@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
+import { generateReceiptId } from '@/utils/receiptHtml';
+
 import { initialPassages, type Passage } from '@/data/mock';
 
 type PassagesContextValue = {
@@ -7,7 +9,7 @@ type PassagesContextValue = {
   pendingPassages: Passage[];
   pendingTotal: number;
   getPassage: (id: string) => Passage | undefined;
-  markAsPaid: (ids: string[]) => void;
+  markAsPaid: (ids: string[], paymentMethod?: string) => void;
 };
 
 const PassagesContext = createContext<PassagesContextValue | null>(null);
@@ -30,7 +32,7 @@ export function PassagesProvider({ children }: { children: ReactNode }) {
     [passages],
   );
 
-  const markAsPaid = useCallback((ids: string[]) => {
+  const markAsPaid = useCallback((ids: string[], paymentMethod = 'Pix') => {
     const now = new Date().toLocaleString('pt-BR', {
       day: '2-digit',
       month: 'short',
@@ -41,7 +43,13 @@ export function PassagesProvider({ children }: { children: ReactNode }) {
     setPassages((current) =>
       current.map((passage) =>
         ids.includes(passage.id)
-          ? { ...passage, status: 'paid' as const, paidAt: now }
+          ? {
+              ...passage,
+              status: 'paid' as const,
+              paidAt: now,
+              paymentMethod,
+              receiptId: generateReceiptId(passage.passageId),
+            }
           : passage,
       ),
     );

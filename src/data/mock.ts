@@ -32,6 +32,8 @@ export type Passage = {
   dueDate?: string;
   status: 'paid' | 'pending';
   paidAt?: string;
+  receiptId?: string;
+  paymentMethod?: string;
   lane?: string;
   gantry?: string;
 };
@@ -147,6 +149,8 @@ export const initialPassages: Passage[] = [
     date: '10 jun, 08:10',
     status: 'paid',
     paidAt: '10 jun, 18:30',
+    receiptId: 'CPV-2026-007912',
+    paymentMethod: 'Pix',
   },
   {
     id: 't3',
@@ -164,6 +168,8 @@ export const initialPassages: Passage[] = [
     date: '8 jun, 19:47',
     status: 'paid',
     paidAt: '9 jun, 10:15',
+    receiptId: 'CPV-2026-007801',
+    paymentMethod: 'Cartão de crédito',
   },
   {
     id: 't4',
@@ -181,6 +187,8 @@ export const initialPassages: Passage[] = [
     date: '5 jun, 06:33',
     status: 'paid',
     paidAt: '5 jun, 22:00',
+    receiptId: 'CPV-2026-007650',
+    paymentMethod: 'Pix',
   },
   {
     id: 't7',
@@ -198,6 +206,8 @@ export const initialPassages: Passage[] = [
     date: '22 mai, 11:05',
     status: 'paid',
     paidAt: '22 mai, 20:10',
+    receiptId: 'CPV-2026-006210',
+    paymentMethod: 'Saldo em conta',
   },
   {
     id: 't8',
@@ -215,6 +225,8 @@ export const initialPassages: Passage[] = [
     date: '15 mai, 07:40',
     status: 'paid',
     paidAt: '15 mai, 19:00',
+    receiptId: 'CPV-2026-006118',
+    paymentMethod: 'Pix',
   },
   {
     id: 't9',
@@ -232,6 +244,8 @@ export const initialPassages: Passage[] = [
     date: '8 abr, 16:18',
     status: 'paid',
     paidAt: '8 abr, 21:45',
+    receiptId: 'CPV-2026-005902',
+    paymentMethod: 'Cartão de crédito',
   },
   {
     id: 't10',
@@ -249,6 +263,8 @@ export const initialPassages: Passage[] = [
     date: '19 mar, 13:02',
     status: 'paid',
     paidAt: '19 mar, 22:30',
+    receiptId: 'CPV-2026-004811',
+    paymentMethod: 'Pix',
   },
   {
     id: 't11',
@@ -266,6 +282,8 @@ export const initialPassages: Passage[] = [
     date: '4 fev, 09:15',
     status: 'paid',
     paidAt: '4 fev, 18:20',
+    receiptId: 'CPV-2026-003720',
+    paymentMethod: 'Saldo em conta',
   },
   {
     id: 't12',
@@ -283,6 +301,8 @@ export const initialPassages: Passage[] = [
     date: '21 jan, 06:50',
     status: 'paid',
     paidAt: '21 jan, 20:05',
+    receiptId: 'CPV-2026-002615',
+    paymentMethod: 'Pix',
   },
 ];
 
