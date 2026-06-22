@@ -9,6 +9,7 @@ import {
   detailScreenIcons,
   iconSize,
   iconStroke,
+  Trash2,
   type DetailScreenIconName,
 } from '@/components/ui/icons';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
@@ -17,6 +18,7 @@ import { fonts } from '@/theme/typography';
 export type DetailListItem = {
   label: string;
   route?: Href;
+  onDelete?: () => void;
 };
 
 type DetailScreenProps = {
@@ -49,14 +51,29 @@ export function ProfileDetailScreen({ title, description, icon, items = [] }: De
         {items.map((item, index) => {
           const label = typeof item === 'string' ? item : item.label;
           const route = typeof item === 'string' ? undefined : item.route;
+          const onDelete = typeof item === 'string' ? undefined : item.onDelete;
           const key = typeof item === 'string' ? item : item.label;
+
+          const trailing = onDelete ? (
+            <Pressable
+              onPress={() => onDelete()}
+              accessibilityRole="button"
+              accessibilityLabel={`Excluir ${label}`}
+              hitSlop={8}
+              style={({ pressed }) => [styles.deleteBtn, pressed && styles.pressed]}
+            >
+              <View pointerEvents="none">
+                <Trash2 size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
+              </View>
+            </Pressable>
+          ) : route ? (
+            <ChevronRight size={iconSize.sm} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
+          ) : null;
 
           const content = (
             <>
               <Text style={styles.rowText}>{label}</Text>
-              {route ? (
-                <ChevronRight size={iconSize.sm} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-              ) : null}
+              {trailing}
             </>
           );
 
@@ -136,5 +153,12 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.6,
+  },
+  deleteBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: -spacing.sm,
   },
 });

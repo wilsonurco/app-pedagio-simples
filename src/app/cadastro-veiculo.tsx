@@ -1,47 +1,114 @@
-import { useState } from 'react';
-import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Car, Check, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
+import { Check, iconSize, iconStroke } from '@/components/ui/icons';
 
 import { FormField } from '@/components/FormField';
 import { PayButton } from '@/components/PayButton';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
-import { vehicleCategories } from '@/data/mock';
+import { useVehicles } from '@/context/VehiclesContext';
+import { type Vehicle } from '@/data/mock';
+import {
+  isCompletePlate,
+  lookupVehicleByPlate,
+  normalizePlate,
+  simulatedPlateExamples,
+} from '@/services/lookupVehicleByPlate';
+import { navigateBack } from '@/utils/navigation';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type Status = 'idle' | 'saving' | 'success';
+type LookupStatus = 'idle' | 'loading' | 'found' | 'not_found' | 'duplicate';
 
-function formatPlate(value: string): string {
-  return value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 7);
+function formatPlate(value: string) {
+  return normalizePlate(value).slice(0, 7);
 }
 
 export default function VehicleRegistrationScreen() {
   const insets = useSafeAreaInsets();
+  const { addVehicle, hasVehicle } = useVehicles();
   const [plate, setPlate] = useState('');
   const [model, setModel] = useState('');
-  const [categoryId, setCategoryId] = useState(vehicleCategories[0].id);
   const [status, setStatus] = useState<Status>('idle');
+  const [lookupStatus, setLookupStatus] = useState<LookupStatus>('idle');
+  const [registeredVehicle, setRegisteredVehicle] = useState<Vehicle | null>(null);
 
-  const isValid = plate.length >= 7 && model.trim().length >= 2;
+  const isReady = lookupStatus === 'found' && model.trim().length >= 2;
 
-  function handleSubmit() {
-    if (!isValid) return;
-    setStatus('saving');
-    setTimeout(() => setStatus('success'), 1200);
+  useEffect(() => {
+    if (status === 'success' || status === 'saving') return;
+
+    if (!isCompletePlate(plate)) {
+      setModel('');
+      setLookupStatus('idle');
+      return;
+    }
+
+    const normalizedPlate = normalizePlate(plate);
+
+    if (hasVehicle(normalizedPlate)) {
+      setModel('');
+      setLookupStatus('duplicate');
+      return;
+    }
+
+    let cancelled = false;
+    setLookupStatus('loading');
+    setModel('');
+
+    lookupVehicleByPlate(normalizedPlate).then((result) => {
+      if (cancelled) return;
+
+      if (result.found) {
+        setModel(result.model);
+        setLookupStatus('found');
+        return;
+      }
+
+      setLookupStatus('not_found');
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [plate, hasVehicle, status]);
+
+  function handlePlateChange(text: string) {
+    setPlate(formatPlate(text));
   }
 
-  if (status === 'success') {
+  function handleSubmit() {
+    if (!isReady) return;
+
+    const normalizedPlate = normalizePlate(plate);
+    const vehicle = { plate: normalizedPlate, model: model.trim() };
+    const added = addVehicle(vehicle);
+
+    if (!added) {
+      setLookupStatus('duplicate');
+      return;
+    }
+
+    setRegisteredVehicle(vehicle);
+    setStatus('saving');
+    setTimeout(() => setStatus('success'), 900);
+  }
+
+  function handleFinish() {
+    navigateBack({ fallback: '/veiculos' });
+  }
+
+  if (status === 'success' && registeredVehicle) {
     return (
       <View style={[styles.container, styles.center, { paddingTop: insets.top }]}>
         <View style={styles.successIcon}>
@@ -49,11 +116,11 @@ export default function VehicleRegistrationScreen() {
         </View>
         <Text style={styles.successTitle}>Veículo cadastrado</Text>
         <Text style={styles.successSubtitle}>
-          {model.trim()} • {plate} foi adicionado à sua conta.
+          {registeredVehicle.model} • {registeredVehicle.plate} foi adicionado à sua conta.
         </Text>
 
         <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
-          <PayButton label="Concluir" onPress={() => router.back()} />
+          <PayButton label="Concluir" onPress={handleFinish} />
         </View>
       </View>
     );
@@ -73,70 +140,78 @@ export default function VehicleRegistrationScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <ScreenBackButton label="Meus veículos" />
+        <ScreenBackButton label="Meus veículos" fallback="/veiculos" />
         <ScreenTitle
           title="Novo veículo"
-          subtitle="Cadastre um veículo na sua conta"
+          subtitle="Informe a placa para buscar os dados automaticamente"
         />
 
         <View style={styles.card}>
           <FormField
             label="Placa"
             value={plate}
-            onChangeText={(text) => setPlate(formatPlate(text))}
+            onChangeText={handlePlateChange}
             placeholder="ABC1D23"
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={7}
           />
+          <LookupFeedback status={lookupStatus} />
           <View style={styles.divider} />
           <FormField
             label="Modelo"
             value={model}
-            onChangeText={setModel}
-            placeholder="Ex.: Honda Civic"
+            editable={false}
+            placeholder="Preenchido automaticamente"
             autoCorrect={false}
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Categoria</Text>
-        <View style={styles.card}>
-          {vehicleCategories.map((category, index) => {
-            const isActive = category.id === categoryId;
-            return (
-              <Pressable
-                key={category.id}
-                onPress={() => setCategoryId(category.id)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: isActive }}
-                accessibilityLabel={category.label}
-                style={({ pressed }) => [
-                  styles.categoryRow,
-                  index < vehicleCategories.length - 1 && styles.divider,
-                  pressed && styles.pressed,
-                ]}
-              >
-                <Text style={[styles.categoryLabel, isActive && styles.categoryLabelActive]}>
-                  {category.label}
-                </Text>
-                {isActive ? (
-                  <Check size={iconSize.sm} color={colors.tint} strokeWidth={iconStroke} />
-                ) : null}
-              </Pressable>
-            );
-          })}
-        </View>
+        <Text style={styles.hintTitle}>Placas de exemplo na simulação</Text>
+        <Text style={styles.hintText}>{simulatedPlateExamples.join(' • ')}</Text>
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
         <PayButton
           label="Cadastrar veículo"
-          loading={status === 'saving'}
-          disabled={!isValid}
+          loading={status === 'saving' || lookupStatus === 'loading'}
+          disabled={!isReady}
           onPress={handleSubmit}
         />
       </View>
     </KeyboardAvoidingView>
+  );
+}
+
+function LookupFeedback({ status }: { status: LookupStatus }) {
+  if (status === 'idle') return null;
+
+  if (status === 'loading') {
+    return (
+      <View style={styles.feedbackRow}>
+        <ActivityIndicator size="small" color={colors.tint} />
+        <Text style={styles.feedbackLoading}>Consultando placa...</Text>
+      </View>
+    );
+  }
+
+  if (status === 'found') {
+    return (
+      <View style={styles.feedbackRow}>
+        <Check size={16} color={colors.systemGreen} strokeWidth={iconStroke} />
+        <Text style={styles.feedbackSuccess}>Veículo identificado</Text>
+      </View>
+    );
+  }
+
+  if (status === 'duplicate') {
+    return <Text style={styles.feedbackError}>Este veículo já está cadastrado na sua conta.</Text>;
+  }
+
+  return (
+    <Text style={styles.feedbackError}>
+      Placa não encontrada. Verifique os dados ou tente uma placa de exemplo.
+    </Text>
   );
 }
 
@@ -161,35 +236,47 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.separator,
   },
-  sectionTitle: {
-    ...fonts.semibold,
+  feedbackRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    marginTop: -spacing.xs,
+  },
+  feedbackLoading: {
+    ...fonts.regular,
     fontSize: fontSize.footnote,
+    color: colors.secondaryLabel,
+  },
+  feedbackSuccess: {
+    ...fonts.medium,
+    fontSize: fontSize.footnote,
+    color: colors.systemGreen,
+  },
+  feedbackError: {
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.systemRed,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    marginTop: -spacing.xs,
+  },
+  hintTitle: {
+    ...fonts.semibold,
+    fontSize: fontSize.caption,
     color: colors.secondaryLabel,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
-    marginBottom: -spacing.sm,
     paddingHorizontal: spacing.xs,
   },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
-    minHeight: 44,
-  },
-  categoryLabel: {
-    flex: 1,
+  hintText: {
     ...fonts.regular,
-    fontSize: fontSize.body,
-    color: colors.label,
-  },
-  categoryLabelActive: {
-    ...fonts.semibold,
-    color: colors.tint,
-  },
-  pressed: {
-    opacity: 0.6,
+    fontSize: fontSize.footnote,
+    color: colors.tertiaryLabel,
+    lineHeight: 20,
+    paddingHorizontal: spacing.xs,
+    marginTop: -spacing.sm,
   },
   footer: {
     paddingHorizontal: spacing.lg,

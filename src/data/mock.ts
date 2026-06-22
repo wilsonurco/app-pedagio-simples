@@ -51,20 +51,7 @@ export type PaymentMethod = {
 export type Vehicle = {
   plate: string;
   model: string;
-  category: string;
 };
-
-export type VehicleCategory = {
-  id: string;
-  label: string;
-};
-
-export const vehicleCategories: VehicleCategory[] = [
-  { id: '1', label: 'Categoria 1 - Carro' },
-  { id: '2', label: 'Categoria 2 - Caminhonete' },
-  { id: '3', label: 'Categoria 3 - Moto' },
-  { id: '4', label: 'Categoria 4 - Ônibus' },
-];
 
 export type UserProfile = {
   name: string;
@@ -361,7 +348,6 @@ export const userProfile: UserProfile = {
   vehicle: {
     plate: 'BRA2E19',
     model: 'Honda Civic',
-    category: 'Categoria 1 - Carro',
   },
 };
 

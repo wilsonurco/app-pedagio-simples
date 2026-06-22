@@ -51,7 +51,6 @@ export default function ProfileScreen() {
           <RNText style={styles.userName}>
             {vehicle.model} • {vehicle.plate}
           </RNText>
-          <RNText style={styles.userEmail}>{vehicle.category}</RNText>
         </View>
       </View>
 

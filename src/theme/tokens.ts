@@ -38,6 +38,17 @@ export const colors = {
   barActive: tint,
   barInactive: 'rgba(120, 120, 128, 0.16)',
 
+  // Dashboard
+  promoBackground: '#2A1F4E',
+  promoAccent: '#7C5CBF',
+  badgePurpleBg: 'rgba(91, 46, 140, 0.12)',
+  badgeOrangeBg: 'rgba(255, 149, 0, 0.12)',
+  badgeGreenBg: 'rgba(52, 199, 89, 0.12)',
+  cardSelectedBorder: tint,
+  cardSelectedBg: 'rgba(91, 46, 140, 0.04)',
+  totalBarBackground: '#3D2066',
+  payButtonBright: '#7C3AED',
+
   // Aliases legados (compatibilidade com componentes existentes)
   primary: tint,
   primaryPressed: tintPressed,

@@ -1,49 +1,95 @@
+import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Header } from '@/components/Header';
-import { HistoryChart } from '@/components/HistoryChart';
-import { PayButton } from '@/components/PayButton';
-import { PendingCard } from '@/components/PendingCard';
-import { TransactionList } from '@/components/TransactionList';
+import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { type PassageFilter } from '@/components/dashboard/FilterTabs';
+import { PassagesToPayPanel } from '@/components/dashboard/PassagesToPayPanel';
+import { PromoBanner } from '@/components/dashboard/PromoBanner';
+import { RecentActivitySection } from '@/components/dashboard/RecentActivitySection';
 import { usePassages } from '@/context/PassagesContext';
+import { useVehicles } from '@/context/VehiclesContext';
+import { usePassageSelection } from '@/hooks/usePassageSelection';
 import { colors, spacing } from '@/theme/tokens';
-import { buildMonthlyHistory } from '@/utils/history';
+
+function getEarliestDueDate(passages: { dueDate?: string }[]) {
+  const withDue = passages.filter((p) => p.dueDate);
+  if (withDue.length === 0) return undefined;
+  return withDue[0]?.dueDate;
+}
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { pendingPassages, passages } = usePassages();
-  const monthlyHistory = buildMonthlyHistory(passages);
+  const { pendingPassages, pendingTotal } = usePassages();
+  const { vehicles } = useVehicles();
+  const [filter, setFilter] = useState<PassageFilter>('all');
+
+  const filteredPassages = useMemo(() => {
+    if (filter === 'all') return pendingPassages;
+    return pendingPassages.filter((p) => p.type === filter);
+  }, [pendingPassages, filter]);
+
+  const { selectedIds, togglePassage } = usePassageSelection(pendingPassages);
+
+  const selectedTotal = useMemo(() => {
+    const selected = pendingPassages.filter((p) => selectedIds.includes(p.id));
+    const visible = filter === 'all' ? selected : selected.filter((p) => p.type === filter);
+    return visible.reduce((sum, p) => sum + p.amount, 0);
+  }, [pendingPassages, selectedIds, filter]);
+
+  function handlePay() {
+    const idsForFilter =
+      filter === 'all'
+        ? selectedIds
+        : selectedIds.filter((id) => filteredPassages.some((p) => p.id === id));
+
+    if (idsForFilter.length === 0) return;
+
+    router.push({
+      pathname: '/pagar-forma',
+      params: { selected: idsForFilter.join(',') },
+    });
+  }
 
   return (
     <View style={styles.container}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
+        <DashboardHeader />
+      </View>
+
       <ScrollView
+        style={styles.scroll}
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + spacing.sm, paddingBottom: spacing.xl },
+          { paddingBottom: insets.bottom + spacing.xxl },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Header onPressNotifications={() => router.push('/alertas')} />
-
         <View style={styles.stack}>
-          <PendingCard />
-          {pendingPassages.length > 0 ? (
-            <TransactionList filter="pending" title="Passagens pendentes" />
-          ) : null}
-          <HistoryChart
-            data={monthlyHistory}
-            onPressDetail={() => router.push('/historico')}
+          <PromoBanner />
+
+          <DashboardGreeting
+            pendingCount={pendingPassages.length}
+            pendingTotal={pendingTotal}
+            dueDate={getEarliestDueDate(pendingPassages)}
+            vehicleCount={vehicles.length}
           />
+
+          <PassagesToPayPanel
+            passages={filteredPassages}
+            selectedIds={selectedIds}
+            total={selectedTotal}
+            filter={filter}
+            onFilterChange={setFilter}
+            onTogglePassage={togglePassage}
+            onPay={handlePay}
+          />
+
+          <RecentActivitySection />
         </View>
       </ScrollView>
-
-      {pendingPassages.length > 0 ? (
-        <View style={[styles.footer, { paddingBottom: spacing.sm }]}>
-          <PayButton onPress={() => router.push('/pagar')} />
-        </View>
-      ) : null}
     </View>
   );
 }
@@ -53,16 +99,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.groupedBackground,
   },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.groupedBackground,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.separator,
+    zIndex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
   content: {
     paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
   },
   stack: {
     gap: spacing.lg,
-    marginTop: spacing.lg,
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    backgroundColor: colors.groupedBackground,
   },
 });

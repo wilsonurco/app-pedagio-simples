@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Download, iconSize, iconStroke, Share2 } from '@/components/ui/icons';
 import type { Passage } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
-import { downloadReceiptPdf, shareReceiptPdf } from '@/utils/receiptPdf';
+import {
+  downloadReceiptPdf,
+  reportReceiptActionError,
+  shareReceiptPdf,
+} from '@/utils/receiptPdf';
 
 type ReceiptActionsProps = {
   passage: Passage;
@@ -19,7 +23,7 @@ export function ReceiptActions({ passage }: ReceiptActionsProps) {
       setLoadingAction('share');
       await shareReceiptPdf(passage);
     } catch (error) {
-      Alert.alert(
+      reportReceiptActionError(
         'Erro ao compartilhar',
         error instanceof Error ? error.message : 'Tente novamente em instantes.',
       );
@@ -33,7 +37,7 @@ export function ReceiptActions({ passage }: ReceiptActionsProps) {
       setLoadingAction('download');
       await downloadReceiptPdf(passage);
     } catch (error) {
-      Alert.alert(
+      reportReceiptActionError(
         'Erro ao baixar',
         error instanceof Error ? error.message : 'Tente novamente em instantes.',
       );

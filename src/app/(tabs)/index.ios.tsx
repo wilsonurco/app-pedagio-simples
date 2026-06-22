@@ -3,7 +3,6 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
-  Chart,
   Host,
   LabeledContent,
   List,
@@ -15,17 +14,15 @@ import {
   controlSize,
   font,
   foregroundStyle,
-  frame,
   listStyle,
   tint as tintModifier,
 } from '@expo/ui/swift-ui/modifiers';
 
 import { ScreenHost } from '@/components/ios/ScreenHost';
-import { formatBRL, history, pendingAmount } from '@/data/mock';
+import { formatBRL, pendingAmount } from '@/data/mock';
 import { colors, spacing } from '@/theme/tokens';
 
 const TINT = tintModifier(colors.tint);
-const maxHistory = Math.max(...history.map((p) => p.value));
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -50,19 +47,6 @@ export default function HomeScreen() {
                 Vence em 3 dias
               </Text>
             </LabeledContent>
-          </Section>
-
-          <Section title="Histórico">
-            <Chart
-              type="bar"
-              data={history.map((point) => ({
-                x: point.label,
-                y: point.value,
-                color: point.value === maxHistory ? colors.tint : undefined,
-              }))}
-              barStyle={{ cornerRadius: 4 }}
-              modifiers={[frame({ height: 140 })]}
-            />
           </Section>
         </List>
       </ScreenHost>

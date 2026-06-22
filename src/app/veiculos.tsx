@@ -1,19 +1,50 @@
+import { useState } from 'react';
+import { View } from 'react-native';
+
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ProfileDetailScreen } from '@/components/ProfileDetailScreen';
-import { userProfile } from '@/data/mock';
+import { useVehicles } from '@/context/VehiclesContext';
+import { type Vehicle } from '@/data/mock';
 
 export default function VehiclesScreen() {
-  const { vehicle } = userProfile;
+  const { vehicles, removeVehicle } = useVehicles();
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
+
+  function handleConfirmDelete() {
+    if (!vehicleToDelete) return;
+    removeVehicle(vehicleToDelete.plate);
+    setVehicleToDelete(null);
+  }
 
   return (
-    <ProfileDetailScreen
-      title="Meus veículos"
-      description="Veículos cadastrados na sua conta"
-      icon="car"
-      items={[
-        `${vehicle.model} • ${vehicle.plate}`,
-        vehicle.category,
-        { label: 'Adicionar novo veículo', route: '/cadastro-veiculo' },
-      ]}
-    />
+    <View style={{ flex: 1 }}>
+      <ProfileDetailScreen
+        title="Meus veículos"
+        description="Veículos cadastrados na sua conta"
+        icon="car"
+        items={[
+          ...vehicles.map((vehicle) => ({
+            label: `${vehicle.model} • ${vehicle.plate}`,
+            onDelete: () => setVehicleToDelete(vehicle),
+          })),
+          { label: 'Adicionar novo veículo', route: '/cadastro-veiculo' },
+        ]}
+      />
+
+      <ConfirmDialog
+        visible={vehicleToDelete !== null}
+        title="Excluir veículo"
+        message={
+          vehicleToDelete
+            ? `Deseja remover ${vehicleToDelete.model} • ${vehicleToDelete.plate} da sua conta?`
+            : ''
+        }
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        destructive
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setVehicleToDelete(null)}
+      />
+    </View>
   );
 }

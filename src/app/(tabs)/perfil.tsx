@@ -1,16 +1,21 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProfileMenuList } from '@/components/ProfileMenuList';
 import { ScreenTitle } from '@/components/ScreenTitle';
-import { Car, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
+import { iconSize, iconStroke, LogOut } from '@/components/ui/icons';
+import { useVehicles } from '@/context/VehiclesContext';
 import { userProfile } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
+const vehicleImage = require('@/assets/images/honda-civic-profile.png');
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { name, email, vehicle } = userProfile;
+  const { name, email } = userProfile;
+  const { primaryVehicle } = useVehicles();
   const initial = name.charAt(0).toUpperCase();
 
   return (
@@ -37,17 +42,24 @@ export default function ProfileScreen() {
       </View>
 
       {/* 3. Card do veículo */}
-      <View style={styles.vehicleCard}>
-        <View style={styles.vehicleIcon}>
-          <Car size={22} color={colors.tint} strokeWidth={iconStroke} />
+      {primaryVehicle ? (
+        <View style={styles.vehicleCard}>
+          <View style={styles.vehicleImageWrap}>
+            <Image
+              source={vehicleImage}
+              style={styles.vehicleImage}
+              contentFit="contain"
+              backgroundColor="#FFFFFF"
+              accessibilityLabel={`Foto do ${primaryVehicle.model}`}
+            />
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>
+              {primaryVehicle.model} • {primaryVehicle.plate}
+            </Text>
+          </View>
         </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>
-            {vehicle.model} • {vehicle.plate}
-          </Text>
-          <Text style={styles.userEmail}>{vehicle.category}</Text>
-        </View>
-      </View>
+      ) : null}
 
       {/* 4. Menu (sequência do print) */}
       <ProfileMenuList />
@@ -116,13 +128,19 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.lg,
   },
-  vehicleIcon: {
-    width: 44,
-    height: 44,
+  vehicleImageWrap: {
+    width: 120,
+    height: 64,
     borderRadius: radius.sm,
-    backgroundColor: 'rgba(91, 46, 140, 0.1)',
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  vehicleImage: {
+    width: 120,
+    height: 64,
+    backgroundColor: '#FFFFFF',
   },
   logout: {
     flexDirection: 'row',
