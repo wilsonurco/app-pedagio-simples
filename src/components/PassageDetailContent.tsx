@@ -9,6 +9,7 @@ import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { generateReceiptId } from '@/utils/receiptHtml';
 import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
 import { formatDateTimeDisplay } from '@/utils/dateTime';
+import { formatPassageIdNumeric } from '@/utils/passageId';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -67,7 +68,7 @@ export function PassageDetailContent({ passage }: PassageDetailContentProps) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Identificação</Text>
         <View style={styles.card}>
-          <DetailRow label="ID da passagem" value={passage.passageId} />
+          <DetailRow label="ID da passagem" value={formatPassageIdNumeric(passage.passageId)} />
           <View style={styles.divider} />
           <DetailRow label="Placa" value={passage.plate} />
           <View style={styles.divider} />

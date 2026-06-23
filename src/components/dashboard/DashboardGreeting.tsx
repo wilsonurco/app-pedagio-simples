@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Calendar, Car, iconSize, iconStroke, Shield, Wallet } from '@/components/ui/icons';
 import { formatBRL, userProfile } from '@/data/mock';
-import { formatDateTimeDisplay } from '@/utils/dateTime';
+import { formatDateDisplay } from '@/utils/dateTime';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -36,12 +36,16 @@ export function DashboardGreeting({
       <View style={styles.badges}>
         <View style={[styles.badge, styles.badgePurple]}>
           <Wallet size={14} color={colors.tint} strokeWidth={iconStroke} />
-          <Text style={styles.badgePurpleText}>{formatBRL(pendingTotal)} em aberto</Text>
+          <Text style={styles.badgePurpleText} numberOfLines={1}>
+            {formatBRL(pendingTotal)} em aberto
+          </Text>
         </View>
 
         <View style={[styles.badge, styles.badgeOrange]}>
           <Calendar size={14} color={colors.systemOrange} strokeWidth={iconStroke} />
-          <Text style={styles.badgeOrangeText}>Vence {formatDateTimeDisplay(dueDate)}</Text>
+          <Text style={styles.badgeOrangeText} numberOfLines={1}>
+            Vence {formatDateDisplay(dueDate)}
+          </Text>
         </View>
       </View>
 
@@ -73,14 +77,16 @@ const styles = StyleSheet.create({
   },
   badges: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     gap: spacing.sm,
     marginTop: spacing.xs,
   },
   badge: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+    minWidth: 0,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radius.pill,

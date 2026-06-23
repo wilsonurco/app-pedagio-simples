@@ -5,6 +5,7 @@ import { PassageTypeBadge } from '@/components/PassageTypeBadge';
 import { ChevronRight, iconSize, iconStroke, ScanLine, Signpost } from '@/components/ui/icons';
 import { formatBRL, type Passage } from '@/data/mock';
 import { formatDateTimeDisplay } from '@/utils/dateTime';
+import { formatPassageIdNumeric } from '@/utils/passageId';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -44,7 +45,7 @@ export function PassageCard({
     <Pressable
       onPress={handlePress}
       accessibilityRole="button"
-      accessibilityLabel={`Passagem ${passage.passageId}, ${formatBRL(passage.amount)}`}
+      accessibilityLabel={`Passagem ${formatPassageIdNumeric(passage.passageId)}, ${formatBRL(passage.amount)}`}
       style={({ pressed }) => [styles.row, showDivider && styles.divider, pressed && styles.pressed]}
     >
       {selectable ? (
@@ -66,7 +67,7 @@ export function PassageCard({
         </View>
         <Text style={styles.highway}>{passage.highway}</Text>
         <Text style={styles.meta}>
-          {passage.plate} • {passage.passageId}
+          {passage.plate} • {formatPassageIdNumeric(passage.passageId)}
         </Text>
         <Text style={styles.date}>{formatDateTimeDisplay(passage.date)}</Text>
       </View>
@@ -157,6 +158,7 @@ const styles = StyleSheet.create({
     ...fonts.regular,
     fontSize: fontSize.caption,
     color: colors.tertiaryLabel,
+    fontVariant: ['tabular-nums'],
   },
   date: {
     ...fonts.regular,

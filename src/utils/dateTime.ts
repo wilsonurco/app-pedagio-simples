@@ -85,6 +85,20 @@ export function formatDurationHms(totalSeconds: number): string {
   return [hours, minutes, seconds].map((value) => value.toString().padStart(2, '0')).join(':');
 }
 
+/** Normaliza data para exibição no padrão DD/MM/AAAA. */
+export function formatDateDisplay(value?: string | null): string {
+  if (!value) return '—';
+
+  const trimmed = value.trim();
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) return trimmed;
+
+  const parsed = parseAppDateTime(trimmed);
+  if (parsed) return formatAppDate(parsed);
+
+  const dateOnly = trimmed.split(/\s+/)[0];
+  return /^\d{2}\/\d{2}\/\d{4}$/.test(dateOnly) ? dateOnly : trimmed;
+}
+
 /** Normaliza data/hora para exibição no padrão DD/MM/AAAA HH:mm:ss. */
 export function formatDateTimeDisplay(value?: string | null): string {
   if (!value) return '—';

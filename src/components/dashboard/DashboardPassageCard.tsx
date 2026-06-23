@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Calendar, Car, ChevronDown, iconStroke, MapPin, Shield } from '@/components/ui/icons';
 import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
 import { formatDateTimeDisplay } from '@/utils/dateTime';
+import { formatPassageIdNumeric } from '@/utils/passageId';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -14,11 +15,24 @@ type DashboardPassageCardProps = {
   defaultExpanded?: boolean;
 };
 
-function DetailCell({ label, value }: { label: string; value: string }) {
+function DetailCell({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
     <View style={styles.detailCell}>
       <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue} numberOfLines={2}>
+      <Text
+        style={[styles.detailValue, mono && styles.detailValueMono]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.85}
+      >
         {value}
       </Text>
     </View>
@@ -113,7 +127,7 @@ export function DashboardPassageCard({
       {expanded ? (
         <View style={styles.details}>
           <View style={styles.detailGrid}>
-            <DetailCell label="ID DA PASSAGEM" value={passage.passageId} />
+            <DetailCell label="ID DA PASSAGEM" value={formatPassageIdNumeric(passage.passageId)} mono />
             <DetailCell label="RODOVIA" value={passage.highway.replace('Rod. ', '')} />
             <DetailCell label="QUILÔMETRO" value={passage.km.toLowerCase()} />
           </View>
@@ -282,6 +296,11 @@ const styles = StyleSheet.create({
     ...fonts.semibold,
     fontSize: fontSize.caption,
     color: colors.label,
+  },
+  detailValueMono: {
+    ...fonts.medium,
+    fontVariant: ['tabular-nums'],
+    letterSpacing: 0.2,
   },
   plazaDetail: {
     gap: 2,
