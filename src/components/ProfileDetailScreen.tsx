@@ -1,6 +1,5 @@
 import { router, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
@@ -12,6 +11,7 @@ import {
   Trash2,
   type DetailScreenIconName,
 } from '@/components/ui/icons';
+import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -29,7 +29,7 @@ type DetailScreenProps = {
 };
 
 export function ProfileDetailScreen({ title, description, icon, items = [] }: DetailScreenProps) {
-  const insets = useSafeAreaInsets();
+  const topPadding = useAppTopPadding(spacing.sm);
   const HeaderIcon = detailScreenIcons[icon];
 
   return (
@@ -37,7 +37,7 @@ export function ProfileDetailScreen({ title, description, icon, items = [] }: De
       style={styles.scroll}
       contentContainerStyle={[
         styles.content,
-        { paddingTop: insets.top + spacing.sm, paddingBottom: spacing.xxl },
+        { paddingTop: topPadding, paddingBottom: spacing.xxl },
       ]}
       showsVerticalScrollIndicator={false}
     >

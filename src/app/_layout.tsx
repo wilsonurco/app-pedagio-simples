@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { PassagesProvider } from '@/context/PassagesContext';
 import { VehiclesProvider } from '@/context/VehiclesContext';
+import { PwaStatusBar } from '@/components/PwaStatusBar';
 import { colors } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -20,6 +21,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <PassagesProvider>
       <VehiclesProvider>
+      <PwaStatusBar />
       <StatusBar style={Platform.OS === 'ios' ? 'dark' : 'dark'} />
       <Stack
         screenOptions={{

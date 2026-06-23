@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HistoryByMonth } from '@/components/HistoryByMonth';
 import { HistoryChart } from '@/components/HistoryChart';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { usePassages } from '@/context/PassagesContext';
+import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { colors, spacing } from '@/theme/tokens';
 import {
   buildMonthlyHistory,
@@ -16,7 +16,7 @@ import {
 } from '@/utils/history';
 
 export default function HistoryScreen() {
-  const insets = useSafeAreaInsets();
+  const topPadding = useAppTopPadding(spacing.sm);
   const { passages } = usePassages();
 
   const monthlyHistory = useMemo(() => buildMonthlyHistory(passages), [passages]);
@@ -37,7 +37,7 @@ export default function HistoryScreen() {
     <ScrollView
       contentContainerStyle={[
         styles.content,
-        { paddingTop: insets.top + spacing.sm, paddingBottom: spacing.xxl },
+        { paddingTop: topPadding, paddingBottom: spacing.xxl },
       ]}
       showsVerticalScrollIndicator={false}
     >

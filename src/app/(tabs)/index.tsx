@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
@@ -11,6 +11,7 @@ import { PromoBanner } from '@/components/dashboard/PromoBanner';
 import { RecentActivitySection } from '@/components/dashboard/RecentActivitySection';
 import { usePassages } from '@/context/PassagesContext';
 import { useVehicles } from '@/context/VehiclesContext';
+import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { usePassageSelection } from '@/hooks/usePassageSelection';
 import { colors, spacing } from '@/theme/tokens';
 
@@ -22,6 +23,7 @@ function getEarliestDueDate(passages: { dueDate?: string }[]) {
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const topPadding = useAppTopPadding(spacing.sm);
   const { pendingPassages, pendingTotal } = usePassages();
   const { vehicles } = useVehicles();
   const [filter, setFilter] = useState<PassageFilter>('all');
@@ -55,7 +57,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
+      <View style={[styles.header, { paddingTop: topPadding }]}>
         <DashboardHeader />
       </View>
 
@@ -102,10 +104,13 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.sm,
-    backgroundColor: colors.groupedBackground,
+    backgroundColor: colors.secondaryBackground,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.separator,
     zIndex: 1,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0 1px 0 rgba(0, 0, 0, 0.04)' }
+      : null),
   },
   scroll: {
     flex: 1,

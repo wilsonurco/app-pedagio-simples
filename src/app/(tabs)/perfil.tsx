@@ -1,19 +1,19 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProfileMenuList } from '@/components/ProfileMenuList';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { iconSize, iconStroke, LogOut } from '@/components/ui/icons';
 import { useVehicles } from '@/context/VehiclesContext';
 import { userProfile } from '@/data/mock';
+import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 const vehicleImage = require('@/assets/images/honda-civic-profile.png');
 
 export default function ProfileScreen() {
-  const insets = useSafeAreaInsets();
+  const topPadding = useAppTopPadding(spacing.sm);
   const { name, email } = userProfile;
   const { primaryVehicle } = useVehicles();
   const initial = name.charAt(0).toUpperCase();
@@ -23,7 +23,7 @@ export default function ProfileScreen() {
       style={styles.scroll}
       contentContainerStyle={[
         styles.content,
-        { paddingTop: insets.top + spacing.sm, paddingBottom: spacing.xxl },
+        { paddingTop: topPadding, paddingBottom: spacing.xxl },
       ]}
       showsVerticalScrollIndicator={false}
     >
