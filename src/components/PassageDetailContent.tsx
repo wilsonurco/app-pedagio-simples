@@ -8,6 +8,7 @@ import { ReceiptActions } from '@/components/ReceiptActions';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { generateReceiptId } from '@/utils/receiptHtml';
 import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
+import { formatDateTimeDisplay } from '@/utils/dateTime';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -102,17 +103,17 @@ export function PassageDetailContent({ passage }: PassageDetailContentProps) {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Datas</Text>
         <View style={styles.card}>
-          <DetailRow label="Passagem" value={passage.date} />
+          <DetailRow label="Passagem" value={formatDateTimeDisplay(passage.date)} />
           {passage.dueDate ? (
             <>
               <View style={styles.divider} />
-              <DetailRow label="Vencimento" value={passage.dueDate} />
+              <DetailRow label="Vencimento" value={formatDateTimeDisplay(passage.dueDate)} />
             </>
           ) : null}
           {passage.paidAt ? (
             <>
               <View style={styles.divider} />
-              <DetailRow label="Pagamento" value={passage.paidAt} />
+              <DetailRow label="Pagamento" value={formatDateTimeDisplay(passage.paidAt)} />
             </>
           ) : null}
           {passage.paymentMethod ? (

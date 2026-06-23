@@ -15,7 +15,7 @@ export default function Root({ children }: PropsWithChildren) {
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
         />
-        <meta name="theme-color" content="#FFFFFF" />
+        <meta name="theme-color" content="#F2F2F7" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -33,12 +33,12 @@ export default function Root({ children }: PropsWithChildren) {
                 min-height: 100dvh;
               }
               html {
-                background-color: #FFFFFF;
+                background-color: #F2F2F7;
               }
               body {
                 margin: 0;
                 overscroll-behavior: none;
-                background-color: #FFFFFF;
+                background-color: #F2F2F7;
                 -webkit-tap-highlight-color: transparent;
               }
               #root {

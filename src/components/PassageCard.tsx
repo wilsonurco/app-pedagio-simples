@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { PassageTypeBadge } from '@/components/PassageTypeBadge';
 import { ChevronRight, iconSize, iconStroke, ScanLine, Signpost } from '@/components/ui/icons';
 import { formatBRL, type Passage } from '@/data/mock';
+import { formatDateTimeDisplay } from '@/utils/dateTime';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -67,7 +68,7 @@ export function PassageCard({
         <Text style={styles.meta}>
           {passage.plate} • {passage.passageId}
         </Text>
-        <Text style={styles.date}>{passage.date}</Text>
+        <Text style={styles.date}>{formatDateTimeDisplay(passage.date)}</Text>
       </View>
 
       <View style={styles.trailing}>

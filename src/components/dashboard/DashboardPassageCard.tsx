@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Calendar, Car, ChevronDown, iconStroke, MapPin, Shield } from '@/components/ui/icons';
 import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
+import { formatDateTimeDisplay } from '@/utils/dateTime';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -89,7 +90,7 @@ export function DashboardPassageCard({
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
               <Calendar size={12} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-              <Text style={styles.metaText}>{passage.date}</Text>
+              <Text style={styles.metaText}>{formatDateTimeDisplay(passage.date)}</Text>
             </View>
             <Text style={styles.metaDot}>·</Text>
             <Text style={styles.metaText} numberOfLines={1}>
@@ -98,7 +99,7 @@ export function DashboardPassageCard({
             <Text style={styles.metaDot}>·</Text>
             <View style={styles.metaItem}>
               <Shield size={12} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-              <Text style={styles.metaText}>Vence: {passage.dueDate ?? '—'}</Text>
+              <Text style={styles.metaText}>Vence: {formatDateTimeDisplay(passage.dueDate)}</Text>
             </View>
             <Text style={styles.metaDot}>·</Text>
             <View style={styles.metaItem}>

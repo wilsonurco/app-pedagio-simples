@@ -5,6 +5,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ProfileDetailScreen } from '@/components/ProfileDetailScreen';
 import { useVehicles } from '@/context/VehiclesContext';
 import { type Vehicle } from '@/data/mock';
+import { getVehicleImageSource } from '@/utils/vehicleImages';
 
 export default function VehiclesScreen() {
   const { vehicles, removeVehicle } = useVehicles();
@@ -25,6 +26,11 @@ export default function VehiclesScreen() {
         items={[
           ...vehicles.map((vehicle) => ({
             label: `${vehicle.model} • ${vehicle.plate}`,
+            imageSource: getVehicleImageSource(vehicle.model),
+            route: {
+              pathname: '/veiculo/[plate]',
+              params: { plate: vehicle.plate },
+            },
             onDelete: () => setVehicleToDelete(vehicle),
           })),
           { label: 'Adicionar novo veículo', route: '/cadastro-veiculo' },

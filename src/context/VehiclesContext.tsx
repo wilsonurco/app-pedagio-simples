@@ -14,6 +14,7 @@ type VehiclesContextValue = {
   vehicles: Vehicle[];
   primaryVehicle: Vehicle | undefined;
   hasVehicle: (plate: string) => boolean;
+  getVehicle: (plate: string) => Vehicle | undefined;
   addVehicle: (vehicle: Vehicle) => boolean;
   removeVehicle: (plate: string) => boolean;
 };
@@ -26,6 +27,12 @@ export function VehiclesProvider({ children }: { children: ReactNode }) {
   const hasVehicle = useCallback(
     (plate: string) =>
       vehicles.some((vehicle) => normalizePlate(vehicle.plate) === normalizePlate(plate)),
+    [vehicles],
+  );
+
+  const getVehicle = useCallback(
+    (plate: string) =>
+      vehicles.find((vehicle) => normalizePlate(vehicle.plate) === normalizePlate(plate)),
     [vehicles],
   );
 
@@ -67,10 +74,11 @@ export function VehiclesProvider({ children }: { children: ReactNode }) {
       vehicles,
       primaryVehicle,
       hasVehicle,
+      getVehicle,
       addVehicle,
       removeVehicle,
     }),
-    [vehicles, primaryVehicle, hasVehicle, addVehicle, removeVehicle],
+    [vehicles, primaryVehicle, hasVehicle, getVehicle, addVehicle, removeVehicle],
   );
 
   return <VehiclesContext.Provider value={value}>{children}</VehiclesContext.Provider>;

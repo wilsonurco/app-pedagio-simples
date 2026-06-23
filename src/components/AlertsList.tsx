@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { alertIcons, iconSize, iconStroke } from '@/components/ui/icons';
 import { alerts, type AlertItem } from '@/data/mock';
+import { formatDateTimeDisplay } from '@/utils/dateTime';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -44,7 +45,7 @@ export function AlertsList({ data = alerts }: AlertsListProps) {
               <View style={styles.itemText}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
                 <Text style={styles.itemDescription}>{item.description}</Text>
-                <Text style={styles.itemDate}>{item.date}</Text>
+                <Text style={styles.itemDate}>{formatDateTimeDisplay(item.date)}</Text>
               </View>
             </>
           );

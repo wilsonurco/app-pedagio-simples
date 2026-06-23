@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Calendar, Car, iconSize, iconStroke, Shield, Wallet } from '@/components/ui/icons';
 import { formatBRL, userProfile } from '@/data/mock';
+import { formatDateTimeDisplay } from '@/utils/dateTime';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -40,7 +41,7 @@ export function DashboardGreeting({
 
         <View style={[styles.badge, styles.badgeOrange]}>
           <Calendar size={14} color={colors.systemOrange} strokeWidth={iconStroke} />
-          <Text style={styles.badgeOrangeText}>Vence {dueDate}</Text>
+          <Text style={styles.badgeOrangeText}>Vence {formatDateTimeDisplay(dueDate)}</Text>
         </View>
       </View>
 

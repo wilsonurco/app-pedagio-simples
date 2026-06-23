@@ -5,6 +5,7 @@ import { font, foregroundStyle, listStyle } from '@expo/ui/swift-ui/modifiers';
 
 import { ScreenHost } from '@/components/ios/ScreenHost';
 import { alerts } from '@/data/mock';
+import { formatDateTimeDisplay } from '@/utils/dateTime';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -30,7 +31,7 @@ export default function AlertsScreen() {
                   {alert.description}
                 </Text>
                 <Text modifiers={[font({ textStyle: 'caption' }), foregroundStyle(ALERT_COLORS[alert.type])]}>
-                  {alert.date}
+                  {formatDateTimeDisplay(alert.date)}
                 </Text>
               </LabeledContent>
             ))}

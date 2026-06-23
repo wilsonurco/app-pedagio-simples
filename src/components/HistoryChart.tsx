@@ -13,7 +13,7 @@ type HistoryChartProps = {
   onPressDetail?: () => void;
 };
 
-const CHART_HEIGHT = 110;
+const CHART_HEIGHT = 72;
 
 export function HistoryChart({
   data,
@@ -104,8 +104,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.secondaryBackground,
     borderRadius: radius.lg,
-    padding: spacing.lg,
-    gap: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.sm,
   },
   title: {
     ...fonts.semibold,
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chart: {
-    height: CHART_HEIGHT + 24,
+    height: CHART_HEIGHT + 18,
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
   column: {
     flex: 1,
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   pressed: {
     opacity: 0.6,

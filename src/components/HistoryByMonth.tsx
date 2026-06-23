@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { PassageCard } from '@/components/PassageCard';
+import { type PassageStatusFilter } from '@/components/PassageStatusFilterTabs';
 import { formatBRL } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -9,18 +10,35 @@ import { MONTH_FULL_NAMES, type MonthPassageGroup } from '@/utils/history';
 type HistoryByMonthProps = {
   groups: MonthPassageGroup[];
   selectedMonth?: string | null;
+  statusFilter?: PassageStatusFilter;
 };
 
-export function HistoryByMonth({ groups, selectedMonth }: HistoryByMonthProps) {
+const emptyMessages: Record<PassageStatusFilter, { title: string; subtitle: string }> = {
+  all: {
+    title: 'Nenhuma passagem neste mês',
+    subtitle: 'Selecione outro mês no gráfico acima.',
+  },
+  paid: {
+    title: 'Nenhuma passagem paga neste mês',
+    subtitle: 'Tente outro mês ou altere o filtro para ver pendências.',
+  },
+  pending: {
+    title: 'Nenhuma passagem pendente neste mês',
+    subtitle: 'Tente outro mês ou altere o filtro para ver pagamentos.',
+  },
+};
+
+export function HistoryByMonth({ groups, selectedMonth, statusFilter = 'all' }: HistoryByMonthProps) {
   const visibleGroups = selectedMonth
     ? groups.filter((group) => group.month === selectedMonth)
     : groups;
 
   if (visibleGroups.length === 0) {
+    const empty = emptyMessages[statusFilter];
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyTitle}>Nenhuma passagem neste mês</Text>
-        <Text style={styles.emptySubtitle}>Selecione outro mês no gráfico acima.</Text>
+        <Text style={styles.emptyTitle}>{empty.title}</Text>
+        <Text style={styles.emptySubtitle}>{empty.subtitle}</Text>
       </View>
     );
   }

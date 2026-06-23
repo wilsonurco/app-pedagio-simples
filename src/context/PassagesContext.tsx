@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
+import { formatNowForPassage } from '@/utils/dateTime';
 import { generateReceiptId } from '@/utils/receiptHtml';
 
 import { initialPassages, type Passage } from '@/data/mock';
@@ -33,12 +34,7 @@ export function PassagesProvider({ children }: { children: ReactNode }) {
   );
 
   const markAsPaid = useCallback((ids: string[], paymentMethod = 'Pix') => {
-    const now = new Date().toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const now = formatNowForPassage();
 
     setPassages((current) =>
       current.map((passage) =>

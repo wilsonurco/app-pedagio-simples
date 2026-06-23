@@ -3,8 +3,13 @@ import { ScrollView, StyleSheet } from 'react-native';
 
 import { HistoryByMonth } from '@/components/HistoryByMonth';
 import { HistoryChart } from '@/components/HistoryChart';
+import {
+  PassageStatusFilterTabs,
+  type PassageStatusFilter,
+} from '@/components/PassageStatusFilterTabs';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { usePassages } from '@/context/PassagesContext';
+import { type Passage } from '@/data/mock';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { colors, spacing } from '@/theme/tokens';
 import {
@@ -15,23 +20,45 @@ import {
   type HistoryMonth,
 } from '@/utils/history';
 
+function filterPassagesByStatus(passages: Passage[], filter: PassageStatusFilter) {
+  if (filter === 'all') return passages;
+  if (filter === 'paid') return passages.filter((passage) => passage.status === 'paid');
+  return passages.filter((passage) => passage.status === 'pending');
+}
+
 export default function HistoryScreen() {
   const topPadding = useAppTopPadding(spacing.sm);
   const { passages } = usePassages();
+  const [statusFilter, setStatusFilter] = useState<PassageStatusFilter>('all');
 
-  const monthlyHistory = useMemo(() => buildMonthlyHistory(passages), [passages]);
-  const monthGroups = useMemo(() => groupPassagesByMonth(passages), [passages]);
+  const filteredPassages = useMemo(
+    () => filterPassagesByStatus(passages, statusFilter),
+    [passages, statusFilter],
+  );
+
+  const monthlyHistory = useMemo(
+    () => buildMonthlyHistory(filteredPassages),
+    [filteredPassages],
+  );
+
+  const monthGroups = useMemo(
+    () => groupPassagesByMonth(filteredPassages),
+    [filteredPassages],
+  );
 
   const [selectedMonth, setSelectedMonth] = useState<HistoryMonth>(() =>
-    getLatestMonthWithPassages(monthGroups) ?? getDefaultHistoryMonth(monthlyHistory),
+    getLatestMonthWithPassages(groupPassagesByMonth(passages)) ??
+      getDefaultHistoryMonth(buildMonthlyHistory(passages)),
   );
 
   useEffect(() => {
     const hasSelected = monthGroups.some((group) => group.month === selectedMonth);
-    if (!hasSelected && monthGroups.length > 0) {
-      setSelectedMonth(monthGroups[0].month);
+    if (!hasSelected) {
+      setSelectedMonth(
+        getLatestMonthWithPassages(monthGroups) ?? getDefaultHistoryMonth(monthlyHistory),
+      );
     }
-  }, [monthGroups, selectedMonth]);
+  }, [monthGroups, monthlyHistory, selectedMonth]);
 
   return (
     <ScrollView
@@ -43,6 +70,8 @@ export default function HistoryScreen() {
     >
       <ScreenTitle title="Histórico" subtitle="Gastos e passagens mês a mês" />
 
+      <PassageStatusFilterTabs value={statusFilter} onChange={setStatusFilter} />
+
       <HistoryChart
         data={monthlyHistory}
         selectedMonth={selectedMonth}
@@ -50,7 +79,11 @@ export default function HistoryScreen() {
         showTitle={false}
       />
 
-      <HistoryByMonth groups={monthGroups} selectedMonth={selectedMonth} />
+      <HistoryByMonth
+        groups={monthGroups}
+        selectedMonth={selectedMonth}
+        statusFilter={statusFilter}
+      />
     </ScrollView>
   );
 }

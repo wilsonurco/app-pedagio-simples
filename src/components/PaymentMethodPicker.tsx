@@ -8,6 +8,8 @@ import {
   paymentMethodIcons,
 } from '@/components/ui/icons';
 import { paymentMethods } from '@/data/mock';
+import { usePaymentProfile } from '@/context/PaymentProfileContext';
+import { formatCardSummary } from '@/utils/cardFormat';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -17,11 +19,21 @@ type PaymentMethodPickerProps = {
 };
 
 export function PaymentMethodPicker({ selectedId, onSelect }: PaymentMethodPickerProps) {
+  const { savedCard } = usePaymentProfile();
+
+  function getDetail(methodId: string, fallback: string) {
+    if (methodId === 'card' && savedCard) {
+      return formatCardSummary(savedCard.brand, savedCard.last4);
+    }
+    return fallback;
+  }
+
   return (
     <View style={styles.methods}>
       {paymentMethods.map((method) => {
         const isActive = method.id === selectedId;
         const MethodIcon = paymentMethodIcons[method.icon];
+        const detail = getDetail(method.id, method.detail);
 
         return (
           <Pressable
@@ -45,7 +57,7 @@ export function PaymentMethodPicker({ selectedId, onSelect }: PaymentMethodPicke
             </View>
             <View style={styles.methodText}>
               <Text style={styles.methodLabel}>{method.label}</Text>
-              <Text style={styles.methodDetail}>{method.detail}</Text>
+              <Text style={styles.methodDetail}>{detail}</Text>
             </View>
             {isActive ? (
               <CircleCheck size={22} color={colors.tint} strokeWidth={iconStrokeActive} />

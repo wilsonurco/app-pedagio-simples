@@ -1,4 +1,5 @@
 import type { HistoryPoint, Passage } from '@/data/mock';
+import { compareAppDateTime, parseAppDateTime } from '@/utils/dateTime';
 
 export const HISTORY_MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'] as const;
 
@@ -13,7 +14,16 @@ export const MONTH_FULL_NAMES: Record<HistoryMonth, string> = {
   Jun: 'Junho',
 };
 
-const MONTH_FROM_DATE: Record<string, HistoryMonth> = {
+const MONTH_BY_NUMBER: Record<number, HistoryMonth> = {
+  1: 'Jan',
+  2: 'Fev',
+  3: 'Mar',
+  4: 'Abr',
+  5: 'Mai',
+  6: 'Jun',
+};
+
+const MONTH_FROM_LEGACY: Record<string, HistoryMonth> = {
   jan: 'Jan',
   fev: 'Fev',
   mar: 'Mar',
@@ -23,9 +33,14 @@ const MONTH_FROM_DATE: Record<string, HistoryMonth> = {
 };
 
 export function getPassageMonth(date: string): HistoryMonth | null {
-  const match = date.match(/\b(jan|fev|mar|abr|mai|jun)\b/i);
-  if (!match) return null;
-  return MONTH_FROM_DATE[match[1].toLowerCase()] ?? null;
+  const parsed = parseAppDateTime(date);
+  if (parsed) {
+    return MONTH_BY_NUMBER[parsed.getMonth() + 1] ?? null;
+  }
+
+  const legacyMatch = date.match(/\b(jan|fev|mar|abr|mai|jun)\b/i);
+  if (!legacyMatch) return null;
+  return MONTH_FROM_LEGACY[legacyMatch[1].toLowerCase()] ?? null;
 }
 
 export function buildMonthlyHistory(passages: Passage[]): HistoryPoint[] {
@@ -47,7 +62,7 @@ export function groupPassagesByMonth(passages: Passage[]): MonthPassageGroup[] {
   return HISTORY_MONTHS.map((month) => {
     const monthPassages = passages
       .filter((passage) => getPassageMonth(passage.date) === month)
-      .sort((a, b) => b.date.localeCompare(a.date, 'pt-BR'));
+      .sort((a, b) => compareAppDateTime(b.date, a.date));
 
     return {
       month,

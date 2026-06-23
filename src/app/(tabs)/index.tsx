@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { type PassageFilter } from '@/components/dashboard/FilterTabs';
+import { PassagesPaymentFooter } from '@/components/dashboard/PassagesPaymentFooter';
 import { PassagesToPayPanel } from '@/components/dashboard/PassagesToPayPanel';
 import { PromoBanner } from '@/components/dashboard/PromoBanner';
 import { RecentActivitySection } from '@/components/dashboard/RecentActivitySection';
@@ -14,15 +14,15 @@ import { useVehicles } from '@/context/VehiclesContext';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { usePassageSelection } from '@/hooks/usePassageSelection';
 import { colors, spacing } from '@/theme/tokens';
+import { compareAppDateTime } from '@/utils/dateTime';
 
 function getEarliestDueDate(passages: { dueDate?: string }[]) {
   const withDue = passages.filter((p) => p.dueDate);
   if (withDue.length === 0) return undefined;
-  return withDue[0]?.dueDate;
+  return [...withDue].sort((a, b) => compareAppDateTime(a.dueDate!, b.dueDate!))[0]?.dueDate;
 }
 
 export default function HomeScreen() {
-  const insets = useSafeAreaInsets();
   const topPadding = useAppTopPadding(spacing.sm);
   const { pendingPassages, pendingTotal } = usePassages();
   const { vehicles } = useVehicles();
@@ -40,6 +40,13 @@ export default function HomeScreen() {
     const visible = filter === 'all' ? selected : selected.filter((p) => p.type === filter);
     return visible.reduce((sum, p) => sum + p.amount, 0);
   }, [pendingPassages, selectedIds, filter]);
+
+  const selectedCount = useMemo(
+    () => filteredPassages.filter((p) => selectedIds.includes(p.id)).length,
+    [filteredPassages, selectedIds],
+  );
+
+  const hasPendingPassages = pendingPassages.length > 0;
 
   function handlePay() {
     const idsForFilter =
@@ -63,10 +70,7 @@ export default function HomeScreen() {
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: insets.bottom + spacing.xxl },
-        ]}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.stack}>
@@ -82,16 +86,24 @@ export default function HomeScreen() {
           <PassagesToPayPanel
             passages={filteredPassages}
             selectedIds={selectedIds}
-            total={selectedTotal}
             filter={filter}
             onFilterChange={setFilter}
             onTogglePassage={togglePassage}
-            onPay={handlePay}
           />
 
           <RecentActivitySection />
         </View>
       </ScrollView>
+
+      {hasPendingPassages ? (
+        <PassagesPaymentFooter
+          total={selectedTotal}
+          selectedCount={selectedCount}
+          totalPassages={filteredPassages.length}
+          hasSelection={selectedCount > 0}
+          onPay={handlePay}
+        />
+      ) : null}
     </View>
   );
 }
@@ -118,6 +130,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
   },
   stack: {
     gap: spacing.lg,

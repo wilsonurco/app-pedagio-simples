@@ -1,4 +1,5 @@
 import { formatBRL, passageTypeLabels, userProfile, type Passage } from '@/data/mock';
+import { formatDateTimeDisplay } from '@/utils/dateTime';
 
 function escapeHtml(value: string): string {
   return value
@@ -110,7 +111,7 @@ export function buildReceiptHtml(passage: Passage): string {
     <table>
       ${row('Nº do comprovante', receiptId)}
       ${row('ID da passagem', passage.passageId)}
-      ${row('Data do pagamento', passage.paidAt ?? '—')}
+      ${row('Data do pagamento', formatDateTimeDisplay(passage.paidAt))}
       ${row('Forma de pagamento', passage.paymentMethod ?? '—')}
     </table>
   </div>
@@ -134,7 +135,7 @@ export function buildReceiptHtml(passage: Passage): string {
       ${row('Quilometragem', passage.km)}
       ${row('Sentido', passage.direction)}
       ${row(passage.type === 'free-flow' ? 'Pórtico' : 'Faixa', passage.gantry ?? passage.lane ?? '—')}
-      ${row('Data da passagem', passage.date)}
+      ${row('Data da passagem', formatDateTimeDisplay(passage.date))}
     </table>
   </div>
 
