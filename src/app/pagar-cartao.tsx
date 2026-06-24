@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     ...fonts.bold,
-    fontSize: fontSize.largeTitle,
+    fontSize: fontSize.title2,
     color: colors.label,
     letterSpacing: -0.4,
   },

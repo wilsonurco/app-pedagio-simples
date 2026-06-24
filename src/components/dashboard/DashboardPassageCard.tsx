@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Calendar, Car, ChevronDown, iconStroke, MapPin, Shield } from '@/components/ui/icons';
+import { Check, ChevronDown, iconStroke } from '@/components/ui/icons';
 import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
-import { formatDateTimeDisplay } from '@/utils/dateTime';
+import { formatDateDisplay, formatDateTimeDisplay } from '@/utils/dateTime';
 import { formatPassageIdNumeric } from '@/utils/passageId';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, radius, shadow, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type DashboardPassageCardProps = {
@@ -13,6 +13,7 @@ type DashboardPassageCardProps = {
   selected: boolean;
   onToggleSelect: () => void;
   defaultExpanded?: boolean;
+  showDivider?: boolean;
 };
 
 function DetailCell({
@@ -44,9 +45,9 @@ export function DashboardPassageCard({
   selected,
   onToggleSelect,
   defaultExpanded = false,
+  showDivider = true,
 }: DashboardPassageCardProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const isFreeFlow = passage.type === 'free-flow';
   const typeLabel = passageTypeLabels[passage.type];
 
   function toggleExpanded() {
@@ -54,8 +55,8 @@ export function DashboardPassageCard({
   }
 
   return (
-    <View style={[styles.card, selected && styles.cardSelected]}>
-      <View style={styles.topRow}>
+    <View style={[styles.wrapper, selected && styles.wrapperSelected]}>
+      <View style={styles.row}>
         <Pressable
           onPress={onToggleSelect}
           accessibilityRole="checkbox"
@@ -64,7 +65,7 @@ export function DashboardPassageCard({
           hitSlop={8}
           style={[styles.checkbox, selected && styles.checkboxSelected]}
         >
-          {selected ? <View style={styles.checkboxInner} /> : null}
+          {selected ? <Check size={12} color={colors.onTint} strokeWidth={2.5} /> : null}
         </Pressable>
 
         <Pressable
@@ -72,54 +73,39 @@ export function DashboardPassageCard({
           accessibilityRole="button"
           accessibilityState={{ expanded }}
           accessibilityLabel={`${expanded ? 'Recolher' : 'Expandir'} detalhes da passagem ${passage.passageId}`}
-          style={({ pressed }) => [styles.summary, pressed && styles.summaryPressed]}
+          style={({ pressed }) => [styles.content, pressed && styles.contentPressed]}
         >
-          <View style={styles.headerContent}>
-            <View style={styles.titleRow}>
-              <MapPin size={14} color={colors.tint} strokeWidth={iconStroke} />
+          <View style={styles.headerRow}>
+            <View style={styles.titleBlock}>
               <Text style={styles.plaza} numberOfLines={1}>
                 {passage.plaza}
               </Text>
-              <View style={[styles.typeBadge, isFreeFlow ? styles.typeFreeFlow : styles.typeManual]}>
-                <Text style={[styles.typeText, isFreeFlow ? styles.typeFreeFlowText : styles.typeManualText]}>
-                  {typeLabel}
-                </Text>
+              <View style={styles.tagRow}>
+                <Text style={styles.typeTag}>{typeLabel}</Text>
+                <Text style={styles.metaDot}>·</Text>
+                <Text style={styles.statusTag}>Pendente</Text>
               </View>
+            </View>
+
+            <View style={styles.trailing}>
+              <Text style={styles.amount}>{formatBRL(passage.amount)}</Text>
               <ChevronDown
-                size={16}
-                color={colors.tertiaryLabel}
+                size={15}
+                color={colors.quaternaryLabel}
                 strokeWidth={iconStroke}
                 style={expanded ? styles.chevronExpanded : undefined}
               />
             </View>
-
-            <View style={styles.amountRow}>
-              <Text style={styles.amount}>{formatBRL(passage.amount)}</Text>
-              <View style={styles.pendingBadge}>
-                <Text style={styles.pendingText}>Pendente</Text>
-              </View>
-            </View>
           </View>
 
-          <View style={styles.metaRow}>
-            <View style={styles.metaItem}>
-              <Calendar size={12} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-              <Text style={styles.metaText}>{formatDateTimeDisplay(passage.date)}</Text>
-            </View>
-            <Text style={styles.metaDot}>·</Text>
-            <Text style={styles.metaText} numberOfLines={1}>
-              {passage.concessionaire}
+          <View style={styles.metaBlock}>
+            <Text style={styles.metaLine} numberOfLines={1}>
+              {formatDateTimeDisplay(passage.date)} · {passage.concessionaire}
             </Text>
-            <Text style={styles.metaDot}>·</Text>
-            <View style={styles.metaItem}>
-              <Shield size={12} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-              <Text style={styles.metaText}>Vence: {formatDateTimeDisplay(passage.dueDate)}</Text>
-            </View>
-            <Text style={styles.metaDot}>·</Text>
-            <View style={styles.metaItem}>
-              <Car size={12} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-              <Text style={styles.metaText}>{passage.plate}</Text>
-            </View>
+            <Text style={styles.metaLine} numberOfLines={1}>
+              Vence {formatDateDisplay(passage.dueDate)} · {passage.plate} ·{' '}
+              {formatPassageIdNumeric(passage.passageId)}
+            </Text>
           </View>
         </Pressable>
       </View>
@@ -127,160 +113,129 @@ export function DashboardPassageCard({
       {expanded ? (
         <View style={styles.details}>
           <View style={styles.detailGrid}>
-            <DetailCell label="ID DA PASSAGEM" value={formatPassageIdNumeric(passage.passageId)} mono />
-            <DetailCell label="RODOVIA" value={passage.highway.replace('Rod. ', '')} />
-            <DetailCell label="QUILÔMETRO" value={passage.km.toLowerCase()} />
+            <DetailCell label="ID" value={formatPassageIdNumeric(passage.passageId)} mono />
+            <DetailCell label="Rodovia" value={passage.highway.replace('Rod. ', '')} />
+            <DetailCell label="Km" value={passage.km.toLowerCase()} />
           </View>
-
-          <View style={styles.plazaDetail}>
-            <Text style={styles.detailLabel}>PRAÇA</Text>
-            <Text style={styles.plazaDetailValue}>
-              {passage.plaza} — {passage.km.toUpperCase()}
-            </Text>
-          </View>
+          <Text style={styles.plazaDetail}>
+            {passage.plaza} — {passage.km.toUpperCase()}
+          </Text>
         </View>
       ) : null}
+
+      {showDivider ? <View style={styles.divider} /> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1.5,
-    borderColor: colors.separator,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
+  wrapper: {
     backgroundColor: colors.secondaryBackground,
   },
-  cardSelected: {
-    borderColor: colors.cardSelectedBorder,
-    backgroundColor: colors.cardSelectedBg,
+  wrapperSelected: {
+    backgroundColor: 'rgba(91, 46, 140, 0.03)',
   },
-  topRow: {
+  row: {
     flexDirection: 'row',
-    gap: spacing.sm,
     alignItems: 'flex-start',
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 1.5,
-    borderColor: colors.tertiaryLabel,
+    borderColor: colors.quaternaryLabel,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 1,
+    marginTop: 2,
   },
   checkboxSelected: {
     borderColor: colors.tint,
     backgroundColor: colors.tint,
   },
-  checkboxInner: {
-    width: 7,
-    height: 7,
-    borderRadius: 2,
-    backgroundColor: colors.onTint,
-  },
-  summary: {
+  content: {
     flex: 1,
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
-  summaryPressed: {
-    opacity: 0.7,
+  contentPressed: {
+    opacity: 0.65,
   },
-  headerContent: {
-    gap: 2,
-  },
-  titleRow: {
+  headerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  titleBlock: {
+    flex: 1,
+    gap: 3,
+    minWidth: 0,
   },
   plaza: {
     ...fonts.semibold,
-    flex: 1,
-    fontSize: fontSize.footnote,
+    fontSize: fontSize.body,
     color: colors.label,
+    letterSpacing: -0.2,
   },
-  typeBadge: {
-    paddingHorizontal: spacing.xs + 2,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
+  tagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
   },
-  typeManual: {
-    backgroundColor: colors.badgePurpleBg,
+  typeTag: {
+    ...fonts.regular,
+    fontSize: fontSize.caption,
+    color: colors.secondaryLabel,
   },
-  typeFreeFlow: {
-    backgroundColor: colors.badgeGreenBg,
+  statusTag: {
+    ...fonts.regular,
+    fontSize: fontSize.caption,
+    color: colors.systemOrange,
   },
-  typeText: {
-    ...fonts.medium,
-    fontSize: fontSize.caption2,
+  metaDot: {
+    ...fonts.regular,
+    fontSize: fontSize.caption,
+    color: colors.quaternaryLabel,
   },
-  typeManualText: {
-    color: colors.tint,
+  trailing: {
+    alignItems: 'flex-end',
+    gap: spacing.xs,
   },
-  typeFreeFlowText: {
-    color: colors.systemGreen,
+  amount: {
+    ...fonts.semibold,
+    fontSize: fontSize.body,
+    color: colors.label,
+    letterSpacing: -0.3,
+    fontVariant: ['tabular-nums'],
   },
   chevronExpanded: {
     transform: [{ rotate: '180deg' }],
   },
-  amountRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
+  metaBlock: {
+    gap: 2,
   },
-  amount: {
-    ...fonts.bold,
-    fontSize: fontSize.headline,
-    color: colors.tint,
-    letterSpacing: -0.3,
-  },
-  pendingBadge: {
-    backgroundColor: colors.badgeOrangeBg,
-    paddingHorizontal: spacing.xs + 2,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-  },
-  pendingText: {
-    ...fonts.medium,
-    fontSize: fontSize.caption2,
-    color: colors.systemOrange,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    columnGap: spacing.xs,
-    rowGap: 2,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  metaDot: {
+  metaLine: {
     ...fonts.regular,
-    fontSize: fontSize.caption2,
+    fontSize: fontSize.caption,
     color: colors.tertiaryLabel,
-  },
-  metaText: {
-    ...fonts.regular,
-    fontSize: fontSize.caption2,
-    color: colors.secondaryLabel,
+    fontVariant: ['tabular-nums'],
   },
   details: {
-    gap: spacing.sm,
-    paddingTop: spacing.xs,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.separator,
+    gap: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    paddingTop: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.groupedBackground,
   },
   detailGrid: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   detailCell: {
     flex: 1,
@@ -290,27 +245,26 @@ const styles = StyleSheet.create({
     ...fonts.medium,
     fontSize: fontSize.caption2,
     color: colors.tertiaryLabel,
-    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   detailValue: {
-    ...fonts.semibold,
-    fontSize: fontSize.caption,
+    ...fonts.medium,
+    fontSize: fontSize.footnote,
     color: colors.label,
   },
   detailValueMono: {
-    ...fonts.medium,
     fontVariant: ['tabular-nums'],
-    letterSpacing: 0.2,
   },
   plazaDetail: {
-    gap: 2,
-    paddingTop: spacing.xs,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.separator,
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.secondaryLabel,
+    lineHeight: 20,
   },
-  plazaDetailValue: {
-    ...fonts.medium,
-    fontSize: fontSize.caption,
-    color: colors.label,
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.separator,
+    marginLeft: spacing.lg + 22 + spacing.md,
   },
 });

@@ -17,7 +17,7 @@ import {
   isValidCvv,
   isValidExpiry,
 } from '@/utils/cardFormat';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, radius, shadow, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type CreditCardFormProps = {
@@ -169,14 +169,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     padding: spacing.lg,
+    ...shadow.card,
   },
   previewIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.sm,
-    backgroundColor: colors.fill,
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -196,8 +195,9 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     overflow: 'hidden',
+    ...shadow.card,
   },
   divider: {
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -218,8 +218,8 @@ const styles = StyleSheet.create({
   },
   submit: {
     backgroundColor: colors.tint,
-    minHeight: 48,
-    borderRadius: radius.md,
+    minHeight: 52,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
@@ -240,8 +240,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     padding: spacing.lg,
+    ...shadow.card,
   },
   savedDetail: {
     ...fonts.regular,

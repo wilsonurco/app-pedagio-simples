@@ -3,11 +3,12 @@ import { Image } from 'expo-image';
 
 import { ProfileMenuList } from '@/components/ProfileMenuList';
 import { ScreenTitle } from '@/components/ScreenTitle';
+import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
 import { iconSize, iconStroke, LogOut } from '@/components/ui/icons';
 import { useVehicles } from '@/context/VehiclesContext';
 import { userProfile } from '@/data/mock';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 const vehicleImage = require('@/assets/images/honda-civic-profile.png');
@@ -27,44 +28,40 @@ export default function ProfileScreen() {
       ]}
       showsVerticalScrollIndicator={false}
     >
-      {/* 1. Título */}
-      <ScreenTitle title="Perfil" />
+      <ScreenTitle title="Perfil" subtitle="Sua conta e preferências" />
 
-      {/* 2. Card do usuário */}
-      <View style={styles.userCard}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initial}</Text>
-        </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{name}</Text>
-          <Text style={styles.userEmail}>{email}</Text>
-        </View>
-      </View>
-
-      {/* 3. Card do veículo */}
-      {primaryVehicle ? (
-        <View style={styles.vehicleCard}>
-          <View style={styles.vehicleImageWrap}>
-            <Image
-              source={vehicleImage}
-              style={styles.vehicleImage}
-              contentFit="contain"
-              backgroundColor="#FFFFFF"
-              accessibilityLabel={`Foto do ${primaryVehicle.model}`}
-            />
+      <GroupedList>
+        <View style={styles.userRow}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initial}</Text>
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>
-              {primaryVehicle.model} • {primaryVehicle.plate}
-            </Text>
+            <Text style={styles.userName}>{name}</Text>
+            <Text style={styles.userEmail}>{email}</Text>
           </View>
         </View>
-      ) : null}
 
-      {/* 4. Menu (sequência do print) */}
+        {primaryVehicle ? (
+          <>
+            <GroupedDivider />
+            <View style={styles.vehicleRow}>
+              <Image
+                source={vehicleImage}
+                style={styles.vehicleImage}
+                contentFit="contain"
+                accessibilityLabel={`Foto do ${primaryVehicle.model}`}
+              />
+              <View style={styles.userInfo}>
+                <Text style={styles.userName}>{primaryVehicle.model}</Text>
+                <Text style={styles.userEmail}>{primaryVehicle.plate}</Text>
+              </View>
+            </View>
+          </>
+        ) : null}
+      </GroupedList>
+
       <ProfileMenuList />
 
-      {/* 5. Sair da conta */}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Sair da conta"
@@ -85,25 +82,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     gap: spacing.lg,
   },
-  userCard: {
+  userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.lg,
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    ...fonts.bold,
-    fontSize: fontSize.title2,
+    ...fonts.semibold,
+    fontSize: fontSize.title3,
     color: colors.onTint,
   },
   userInfo: {
@@ -120,27 +116,16 @@ const styles = StyleSheet.create({
     fontSize: fontSize.footnote,
     color: colors.secondaryLabel,
   },
-  vehicleCard: {
+  vehicleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-  },
-  vehicleImageWrap: {
-    width: 120,
-    height: 64,
-    borderRadius: radius.sm,
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   vehicleImage: {
-    width: 120,
-    height: 64,
-    backgroundColor: '#FFFFFF',
+    width: 72,
+    height: 40,
   },
   logout: {
     flexDirection: 'row',
@@ -151,11 +136,11 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   logoutText: {
-    ...fonts.semibold,
+    ...fonts.medium,
     fontSize: fontSize.body,
     color: colors.systemRed,
   },
   pressed: {
-    opacity: 0.6,
+    opacity: 0.65,
   },
 });

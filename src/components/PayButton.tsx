@@ -11,7 +11,7 @@ type PayButtonProps = {
 };
 
 export function PayButton({
-  label = 'Pagar Agora',
+  label = 'Pagar agora',
   loading = false,
   disabled = false,
   onPress,
@@ -27,7 +27,7 @@ export function PayButton({
       accessibilityState={{ disabled: loading, busy: loading }}
       style={({ pressed }) => [
         styles.button,
-        pressed && styles.buttonPressed,
+        pressed && !isDisabled && styles.buttonPressed,
         isDisabled && styles.buttonDisabled,
       ]}
     >
@@ -43,18 +43,17 @@ export function PayButton({
 const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.tint,
-    minHeight: 50,
-    borderRadius: radius.md,
+    minHeight: 52,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.xl,
   },
   buttonPressed: {
     backgroundColor: colors.tintPressed,
-    opacity: 0.92,
   },
   buttonDisabled: {
-    opacity: 0.5,
+    opacity: 0.38,
   },
   label: {
     ...fonts.semibold,

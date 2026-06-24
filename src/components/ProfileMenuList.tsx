@@ -1,69 +1,49 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import {
-  ChevronRight,
-  iconSize,
-  iconStroke,
-  profileMenuIcons,
-} from '@/components/ui/icons';
+import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
+import { ChevronRight, iconSize, iconStroke, profileMenuIcons } from '@/components/ui/icons';
 import { profileMenuItems } from '@/data/mock';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 export function ProfileMenuList() {
   return (
-    <View style={styles.card}>
+    <GroupedList>
       {profileMenuItems.map((item, index) => {
         const Icon = profileMenuIcons[item.icon];
 
         return (
-          <Pressable
-            key={item.id}
-            onPress={() => router.push(item.route)}
-            accessibilityRole="button"
-            accessibilityLabel={item.label}
-            style={({ pressed }) => [
-              styles.row,
-              index < profileMenuItems.length - 1 && styles.divider,
-              pressed && styles.pressed,
-            ]}
-          >
-            <View style={styles.iconWrap}>
-              <Icon size={iconSize.sm} color={colors.tint} strokeWidth={iconStroke} />
-            </View>
-            <Text style={styles.label}>{item.label}</Text>
-            <ChevronRight size={iconSize.sm} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-          </Pressable>
+          <View key={item.id}>
+            {index > 0 ? <GroupedDivider inset={spacing.lg + iconSize.sm + spacing.md} /> : null}
+            <Pressable
+              onPress={() => router.push(item.route)}
+              accessibilityRole="button"
+              accessibilityLabel={item.label}
+              style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+            >
+              <Icon size={iconSize.sm} color={colors.secondaryLabel} strokeWidth={iconStroke} />
+              <Text style={styles.label}>{item.label}</Text>
+              <ChevronRight size={16} color={colors.quaternaryLabel} strokeWidth={iconStroke} />
+            </Pressable>
+          </View>
         );
       })}
-    </View>
+    </GroupedList>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.lg,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
     minHeight: 44,
   },
-  divider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.separator,
-  },
   pressed: {
-    opacity: 0.6,
-  },
-  iconWrap: {
-    width: 32,
-    alignItems: 'center',
+    opacity: 0.65,
   },
   label: {
     flex: 1,

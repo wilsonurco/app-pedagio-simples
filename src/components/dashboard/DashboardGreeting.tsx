@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { Calendar, Car, iconSize, iconStroke, Shield, Wallet } from '@/components/ui/icons';
+import { GroupedList } from '@/components/ui/GroupedList';
 import { formatBRL, userProfile } from '@/data/mock';
 import { formatDateDisplay } from '@/utils/dateTime';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type DashboardGreetingProps = {
@@ -25,37 +25,34 @@ export function DashboardGreeting({
 }: DashboardGreetingProps) {
   const subtitle =
     pendingCount === 1
-      ? '1 passagem pendente de pagamento'
-      : `${pendingCount} passagens pendentes de pagamento`;
+      ? '1 passagem pendente'
+      : `${pendingCount} passagens pendentes`;
 
   return (
     <View style={styles.container}>
       <Text style={styles.greeting}>Olá, {firstName(userProfile.name)}</Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
 
-      <View style={styles.badges}>
-        <View style={[styles.badge, styles.badgePurple]}>
-          <Wallet size={14} color={colors.tint} strokeWidth={iconStroke} />
-          <Text style={styles.badgePurpleText} numberOfLines={1}>
-            {formatBRL(pendingTotal)} em aberto
+      <GroupedList style={styles.summary}>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Em aberto</Text>
+          <Text style={styles.summaryValue}>{formatBRL(pendingTotal)}</Text>
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Vencimento</Text>
+          <Text style={[styles.summaryValue, styles.summaryDue]}>
+            {formatDateDisplay(dueDate)}
           </Text>
         </View>
-
-        <View style={[styles.badge, styles.badgeOrange]}>
-          <Calendar size={14} color={colors.systemOrange} strokeWidth={iconStroke} />
-          <Text style={styles.badgeOrangeText} numberOfLines={1}>
-            Vence {formatDateDisplay(dueDate)}
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Veículos</Text>
+          <Text style={styles.summaryValue}>
+            {vehicleCount} {vehicleCount === 1 ? 'cadastrado' : 'cadastrados'}
           </Text>
         </View>
-      </View>
-
-      <View style={styles.vehicleRow}>
-        <Shield size={iconSize.sm} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-        <Text style={styles.vehicleText}>
-          {vehicleCount} {vehicleCount === 1 ? 'veículo' : 'veículos'}
-        </Text>
-        <Car size={iconSize.sm} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-      </View>
+      </GroupedList>
     </View>
   );
 }
@@ -68,54 +65,41 @@ const styles = StyleSheet.create({
     ...fonts.bold,
     fontSize: fontSize.title2,
     color: colors.label,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   subtitle: {
     ...fonts.regular,
     fontSize: fontSize.subheadline,
     color: colors.secondaryLabel,
   },
-  badges: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    gap: spacing.sm,
-    marginTop: spacing.xs,
+  summary: {
+    marginTop: spacing.sm,
   },
-  badge: {
-    flex: 1,
+  summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    minWidth: 0,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    minHeight: 44,
   },
-  badgePurple: {
-    backgroundColor: colors.badgePurpleBg,
+  summaryDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.separator,
+    marginLeft: spacing.lg,
   },
-  badgeOrange: {
-    backgroundColor: colors.badgeOrangeBg,
-  },
-  badgePurpleText: {
-    ...fonts.medium,
-    fontSize: fontSize.footnote,
-    color: colors.tint,
-  },
-  badgeOrangeText: {
-    ...fonts.medium,
-    fontSize: fontSize.footnote,
-    color: colors.systemOrange,
-  },
-  vehicleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginTop: spacing.xs,
-  },
-  vehicleText: {
+  summaryLabel: {
     ...fonts.regular,
-    fontSize: fontSize.footnote,
-    color: colors.tertiaryLabel,
+    fontSize: fontSize.body,
+    color: colors.label,
+  },
+  summaryValue: {
+    ...fonts.medium,
+    fontSize: fontSize.body,
+    color: colors.secondaryLabel,
+    fontVariant: ['tabular-nums'],
+  },
+  summaryDue: {
+    color: colors.systemOrange,
   },
 });

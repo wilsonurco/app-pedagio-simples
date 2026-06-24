@@ -1,20 +1,21 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { alertIcons, iconSize, iconStroke } from '@/components/ui/icons';
+import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
+import { ChevronRight, iconStroke } from '@/components/ui/icons';
 import { alerts, type AlertItem } from '@/data/mock';
 import { formatDateTimeDisplay } from '@/utils/dateTime';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type AlertsListProps = {
   data?: AlertItem[];
 };
 
-const ICON_COLORS: Record<AlertItem['type'], string> = {
-  info: colors.systemBlue,
-  warning: colors.systemOrange,
-  danger: colors.systemRed,
+const TYPE_LABEL: Record<AlertItem['type'], string> = {
+  info: 'Informação',
+  warning: 'Atenção',
+  danger: 'Urgente',
 };
 
 export function AlertsList({ data = alerts }: AlertsListProps) {
@@ -29,98 +30,76 @@ export function AlertsList({ data = alerts }: AlertsListProps) {
   }
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Alertas</Text>
+    <GroupedList>
+      {data.map((item, index) => {
+        const isInteractive = Boolean(item.passageId) || item.type === 'warning';
 
-      <View>
-        {data.map((item, index) => {
-          const Icon = alertIcons[item.type];
-          const isInteractive = Boolean(item.passageId) || item.type === 'warning';
+        const content = (
+          <>
+            <View style={styles.itemText}>
+              <Text style={styles.itemEyebrow}>{TYPE_LABEL[item.type]}</Text>
+              <Text style={styles.itemTitle}>{item.title}</Text>
+              <Text style={styles.itemDescription}>{item.description}</Text>
+              <Text style={styles.itemDate}>{formatDateTimeDisplay(item.date)}</Text>
+            </View>
+            {isInteractive ? (
+              <ChevronRight size={16} color={colors.quaternaryLabel} strokeWidth={iconStroke} />
+            ) : null}
+          </>
+        );
 
-          const content = (
-            <>
-              <View style={[styles.iconWrap, { backgroundColor: `${ICON_COLORS[item.type]}18` }]}>
-                <Icon size={iconSize.sm} color={ICON_COLORS[item.type]} strokeWidth={iconStroke} />
-              </View>
-              <View style={styles.itemText}>
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemDescription}>{item.description}</Text>
-                <Text style={styles.itemDate}>{formatDateTimeDisplay(item.date)}</Text>
-              </View>
-            </>
-          );
-
-          if (!isInteractive) {
-            return (
-              <View
-                key={item.id}
-                style={[styles.item, index < data.length - 1 && styles.itemDivider]}
-              >
-                {content}
-              </View>
-            );
-          }
-
+        if (!isInteractive) {
           return (
+            <View key={item.id}>
+              {index > 0 ? <GroupedDivider /> : null}
+              <View style={styles.item}>{content}</View>
+            </View>
+          );
+        }
+
+        return (
+          <View key={item.id}>
+            {index > 0 ? <GroupedDivider /> : null}
             <Pressable
-              key={item.id}
               onPress={() => handlePress(item)}
               accessibilityRole="button"
               accessibilityLabel={item.title}
-              style={({ pressed }) => [
-                styles.item,
-                index < data.length - 1 && styles.itemDivider,
-                pressed && styles.pressed,
-              ]}
+              style={({ pressed }) => [styles.item, pressed && styles.pressed]}
             >
               {content}
             </Pressable>
-          );
-        })}
-      </View>
-    </View>
+          </View>
+        );
+      })}
+    </GroupedList>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
-  title: {
-    ...fonts.semibold,
-    fontSize: fontSize.headline,
-    color: colors.label,
-  },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingVertical: spacing.md,
-  },
-  itemDivider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.separator,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
   pressed: {
-    opacity: 0.6,
-  },
-  iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
+    opacity: 0.65,
   },
   itemText: {
     flex: 1,
     gap: 2,
   },
+  itemEyebrow: {
+    ...fonts.medium,
+    fontSize: fontSize.caption2,
+    color: colors.tertiaryLabel,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
   itemTitle: {
     ...fonts.semibold,
-    fontSize: fontSize.subheadline,
+    fontSize: fontSize.body,
     color: colors.label,
   },
   itemDescription: {
@@ -134,5 +113,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.caption,
     color: colors.tertiaryLabel,
     marginTop: 2,
+    fontVariant: ['tabular-nums'],
   },
 });

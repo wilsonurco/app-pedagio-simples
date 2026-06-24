@@ -40,31 +40,30 @@ export function PassageStatusFilterTabs({ value, onChange }: PassageStatusFilter
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: colors.tertiaryBackground,
-    borderRadius: radius.md,
+    backgroundColor: 'rgba(120, 120, 128, 0.12)',
+    borderRadius: radius.pill,
     padding: 3,
-    gap: 2,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radius.sm,
-    minHeight: 36,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.pill,
+    minHeight: 34,
   },
   tabActive: {
     backgroundColor: colors.secondaryBackground,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
-    shadowRadius: 2,
+    shadowRadius: 3,
     elevation: 1,
   },
   tabText: {
     ...fonts.medium,
-    fontSize: fontSize.caption,
+    fontSize: fontSize.footnote,
     color: colors.secondaryLabel,
   },
   tabTextActive: {

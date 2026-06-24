@@ -11,15 +11,8 @@ import {
 
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
-import {
-  Car,
-  ChevronRight,
-  detailScreenIcons,
-  iconSize,
-  iconStroke,
-  Trash2,
-  type DetailScreenIconName,
-} from '@/components/ui/icons';
+import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
+import { Car, ChevronRight, iconSize, iconStroke, Trash2 } from '@/components/ui/icons';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -34,7 +27,7 @@ export type DetailListItem = {
 type DetailScreenProps = {
   title: string;
   description: string;
-  icon: DetailScreenIconName;
+  icon?: string;
   items?: (string | DetailListItem)[];
 };
 
@@ -46,21 +39,19 @@ function VehicleThumbnail({ imageSource, label }: { imageSource?: ImageSourcePro
           source={imageSource}
           style={styles.thumbnailImage}
           contentFit="contain"
-          backgroundColor="#FFFFFF"
           accessibilityLabel={`Foto do veículo ${label}`}
         />
       ) : (
         <View style={styles.thumbnailPlaceholder}>
-          <Car size={18} color={colors.tint} strokeWidth={iconStroke} />
+          <Car size={16} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
         </View>
       )}
     </View>
   );
 }
 
-export function ProfileDetailScreen({ title, description, icon, items = [] }: DetailScreenProps) {
+export function ProfileDetailScreen({ title, description, items = [] }: DetailScreenProps) {
   const topPadding = useAppTopPadding(spacing.sm);
-  const HeaderIcon = detailScreenIcons[icon];
 
   return (
     <ScrollView
@@ -74,10 +65,7 @@ export function ProfileDetailScreen({ title, description, icon, items = [] }: De
       <ScreenBackButton />
       <ScreenTitle title={title} subtitle={description} />
 
-      <View style={styles.card}>
-        <View style={styles.iconWrap}>
-          <HeaderIcon size={iconSize.md} color={colors.tint} strokeWidth={iconStroke} />
-        </View>
+      <GroupedList>
         {items.map((item, index) => {
           const label = typeof item === 'string' ? item : item.label;
           const route = typeof item === 'string' ? undefined : item.route;
@@ -99,13 +87,11 @@ export function ProfileDetailScreen({ title, description, icon, items = [] }: De
                   hitSlop={8}
                   style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
                 >
-                  <View pointerEvents="none">
-                    <Trash2 size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
-                  </View>
+                  <Trash2 size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
                 </Pressable>
               ) : null}
               {route ? (
-                <ChevronRight size={iconSize.sm} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
+                <ChevronRight size={16} color={colors.quaternaryLabel} strokeWidth={iconStroke} />
               ) : null}
             </View>
           );
@@ -120,37 +106,32 @@ export function ProfileDetailScreen({ title, description, icon, items = [] }: De
 
           if (route) {
             return (
-              <Pressable
-                key={key}
-                onPress={() => router.push(route)}
-                accessibilityRole="button"
-                accessibilityLabel={`Visualizar ${label}`}
-                style={({ pressed }) => [
-                  styles.row,
-                  hasThumbnail && styles.rowWithThumbnail,
-                  index < items.length - 1 && styles.divider,
-                  pressed && styles.pressed,
-                ]}
-              >
-                {content}
-              </Pressable>
+              <View key={key}>
+                {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 56 + spacing.md : spacing.lg} /> : null}
+                <Pressable
+                  onPress={() => router.push(route)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Visualizar ${label}`}
+                  style={({ pressed }) => [
+                    styles.row,
+                    hasThumbnail && styles.rowWithThumbnail,
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  {content}
+                </Pressable>
+              </View>
             );
           }
 
           return (
-            <View
-              key={key}
-              style={[
-                styles.row,
-                hasThumbnail && styles.rowWithThumbnail,
-                index < items.length - 1 && styles.divider,
-              ]}
-            >
-              {content}
+            <View key={key}>
+              {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 56 + spacing.md : spacing.lg} /> : null}
+              <View style={[styles.row, hasThumbnail && styles.rowWithThumbnail]}>{content}</View>
             </View>
           );
         })}
-      </View>
+      </GroupedList>
     </ScrollView>
   );
 }
@@ -162,22 +143,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.lg,
     gap: spacing.lg,
-  },
-  card: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-  },
-  iconWrap: {
-    alignSelf: 'center',
-    marginTop: spacing.xl,
-    marginBottom: spacing.md,
-    width: 48,
-    height: 48,
-    borderRadius: radius.md,
-    backgroundColor: 'rgba(91, 46, 140, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   row: {
     flexDirection: 'row',
@@ -191,10 +156,6 @@ const styles = StyleSheet.create({
   rowWithThumbnail: {
     paddingVertical: spacing.md,
   },
-  divider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.separator,
-  },
   rowText: {
     flex: 1,
     ...fonts.regular,
@@ -206,9 +167,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: radius.sm,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.separator,
+    backgroundColor: colors.groupedBackground,
   },
   thumbnailImage: {
     width: '100%',
@@ -218,7 +177,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(91, 46, 140, 0.08)',
+    backgroundColor: colors.groupedBackground,
   },
   trailing: {
     flexDirection: 'row',
@@ -233,6 +192,6 @@ const styles = StyleSheet.create({
     marginRight: -spacing.sm,
   },
   pressed: {
-    opacity: 0.6,
+    opacity: 0.65,
   },
 });

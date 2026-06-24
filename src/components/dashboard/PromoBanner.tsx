@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ArrowUpRight, iconStroke, Wifi } from '@/components/ui/icons';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { GroupedList } from '@/components/ui/GroupedList';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type PromoBannerProps = {
@@ -10,65 +10,56 @@ type PromoBannerProps = {
 
 export function PromoBanner({ onPress }: PromoBannerProps) {
   return (
-    <View style={styles.container}>
-      <View style={styles.iconWrap}>
-        <Wifi size={18} color={colors.promoAccent} strokeWidth={iconStroke} />
-      </View>
-
-      <Text style={styles.text}>Economize até 30% em pedágios com a Tag Move Mais</Text>
-
+    <GroupedList>
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
-        accessibilityLabel="Ver planos"
-        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+        accessibilityLabel="Ver planos da Tag Move Mais"
+        style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       >
-        <Text style={styles.buttonText}>Ver planos</Text>
-        <ArrowUpRight size={14} color={colors.label} strokeWidth={iconStroke} />
+        <View style={styles.copy}>
+          <Text style={styles.eyebrow}>Tag Move Mais</Text>
+          <Text style={styles.text}>Economize até 30% em pedágios</Text>
+        </View>
+        <Text style={styles.action}>Ver planos</Text>
       </Pressable>
-    </View>
+    </GroupedList>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.promoBackground,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
+    justifyContent: 'space-between',
+    gap: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    minHeight: 44,
   },
-  iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.sm,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  rowPressed: {
+    opacity: 0.65,
+  },
+  copy: {
+    flex: 1,
+    gap: 2,
+  },
+  eyebrow: {
+    ...fonts.medium,
+    fontSize: fontSize.caption,
+    color: colors.tint,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   text: {
-    ...fonts.medium,
-    flex: 1,
-    fontSize: fontSize.footnote,
-    color: colors.onTint,
-    lineHeight: 18,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    backgroundColor: colors.onTint,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
-  },
-  buttonPressed: {
-    opacity: 0.85,
-  },
-  buttonText: {
-    ...fonts.semibold,
-    fontSize: fontSize.caption,
+    ...fonts.regular,
+    fontSize: fontSize.subheadline,
     color: colors.label,
+    lineHeight: 20,
+  },
+  action: {
+    ...fonts.semibold,
+    fontSize: fontSize.subheadline,
+    color: colors.tint,
   },
 });

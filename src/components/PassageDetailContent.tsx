@@ -2,23 +2,18 @@ import { router } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { PassageTypeBadge } from '@/components/PassageTypeBadge';
 import { PayButton } from '@/components/PayButton';
 import { ReceiptActions } from '@/components/ReceiptActions';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
+import { GroupedDivider, GroupedList, GroupedSection } from '@/components/ui/GroupedList';
 import { generateReceiptId } from '@/utils/receiptHtml';
 import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
-import { formatDateTimeDisplay } from '@/utils/dateTime';
+import { formatDateDisplay, formatDateTimeDisplay } from '@/utils/dateTime';
 import { formatPassageIdNumeric } from '@/utils/passageId';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
-type DetailRowProps = {
-  label: string;
-  value: string;
-};
-
-function DetailRow({ label, value }: DetailRowProps) {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
@@ -35,6 +30,42 @@ export function PassageDetailContent({ passage }: PassageDetailContentProps) {
   const insets = useSafeAreaInsets();
   const isPending = passage.status === 'pending';
 
+  const identificationRows = [
+    { label: 'ID da passagem', value: formatPassageIdNumeric(passage.passageId) },
+    { label: 'Placa', value: passage.plate },
+    { label: 'Veículo', value: passage.vehicleModel },
+  ];
+
+  const locationRows = [
+    { label: 'Tipo', value: passageTypeLabels[passage.type] },
+    { label: 'Concessionária', value: passage.concessionaire },
+    { label: 'Quilometragem', value: passage.km },
+    { label: 'Sentido', value: passage.direction },
+    ...(passage.lane ? [{ label: 'Faixa', value: passage.lane }] : []),
+    ...(passage.gantry ? [{ label: 'Pórtico', value: passage.gantry }] : []),
+  ];
+
+  const dateRows = [
+    { label: 'Passagem', value: formatDateTimeDisplay(passage.date) },
+    ...(passage.dueDate
+      ? [{ label: 'Vencimento', value: formatDateDisplay(passage.dueDate) }]
+      : []),
+    ...(passage.paidAt ? [{ label: 'Pagamento', value: formatDateTimeDisplay(passage.paidAt) }] : []),
+    ...(passage.paymentMethod ? [{ label: 'Forma de pagamento', value: passage.paymentMethod }] : []),
+    ...(passage.receiptId || !isPending
+      ? [{ label: 'Nº do comprovante', value: passage.receiptId ?? generateReceiptId(passage.passageId) }]
+      : []),
+  ];
+
+  function renderRows(rows: { label: string; value: string }[]) {
+    return rows.map((row, index) => (
+      <View key={row.label}>
+        {index > 0 ? <GroupedDivider /> : null}
+        <DetailRow label={row.label} value={row.value} />
+      </View>
+    ));
+  }
+
   return (
     <ScrollView
       style={styles.scroll}
@@ -48,92 +79,26 @@ export function PassageDetailContent({ passage }: PassageDetailContentProps) {
 
       <View style={styles.header}>
         <Text style={styles.title}>{passage.plaza}</Text>
-        <Text style={styles.subtitle}>{passage.highway}</Text>
-        <PassageTypeBadge type={passage.type} />
-      </View>
-
-      <View style={styles.amountCard}>
-        <Text style={styles.amountLabel}>Valor da passagem</Text>
-        <Text style={styles.amount}>{formatBRL(passage.amount)}</Text>
-        <Text
-          style={[
-            styles.status,
-            isPending ? styles.statusPending : styles.statusPaid,
-          ]}
-        >
-          {isPending ? 'Pendente' : 'Pago'}
+        <Text style={styles.subtitle}>
+          {passage.highway} · {passageTypeLabels[passage.type]}
         </Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Identificação</Text>
-        <View style={styles.card}>
-          <DetailRow label="ID da passagem" value={formatPassageIdNumeric(passage.passageId)} />
-          <View style={styles.divider} />
-          <DetailRow label="Placa" value={passage.plate} />
-          <View style={styles.divider} />
-          <DetailRow label="Veículo" value={passage.vehicleModel} />
+      <GroupedList>
+        <View style={styles.amountRow}>
+          <View>
+            <Text style={styles.amountLabel}>Valor</Text>
+            <Text style={styles.amount}>{formatBRL(passage.amount)}</Text>
+          </View>
+          <Text style={[styles.status, isPending ? styles.statusPending : styles.statusPaid]}>
+            {isPending ? 'Pendente' : 'Pago'}
+          </Text>
         </View>
-      </View>
+      </GroupedList>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Local da passagem</Text>
-        <View style={styles.card}>
-          <DetailRow label="Tipo" value={passageTypeLabels[passage.type]} />
-          <View style={styles.divider} />
-          <DetailRow label="Concessionária" value={passage.concessionaire} />
-          <View style={styles.divider} />
-          <DetailRow label="Quilometragem" value={passage.km} />
-          <View style={styles.divider} />
-          <DetailRow label="Sentido" value={passage.direction} />
-          {passage.lane ? (
-            <>
-              <View style={styles.divider} />
-              <DetailRow label="Faixa" value={passage.lane} />
-            </>
-          ) : null}
-          {passage.gantry ? (
-            <>
-              <View style={styles.divider} />
-              <DetailRow label="Pórtico" value={passage.gantry} />
-            </>
-          ) : null}
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Datas</Text>
-        <View style={styles.card}>
-          <DetailRow label="Passagem" value={formatDateTimeDisplay(passage.date)} />
-          {passage.dueDate ? (
-            <>
-              <View style={styles.divider} />
-              <DetailRow label="Vencimento" value={formatDateTimeDisplay(passage.dueDate)} />
-            </>
-          ) : null}
-          {passage.paidAt ? (
-            <>
-              <View style={styles.divider} />
-              <DetailRow label="Pagamento" value={formatDateTimeDisplay(passage.paidAt)} />
-            </>
-          ) : null}
-          {passage.paymentMethod ? (
-            <>
-              <View style={styles.divider} />
-              <DetailRow label="Forma de pagamento" value={passage.paymentMethod} />
-            </>
-          ) : null}
-          {passage.receiptId || !isPending ? (
-            <>
-              <View style={styles.divider} />
-              <DetailRow
-                label="Nº do comprovante"
-                value={passage.receiptId ?? generateReceiptId(passage.passageId)}
-              />
-            </>
-          ) : null}
-        </View>
-      </View>
+      <GroupedSection title="Identificação">{renderRows(identificationRows)}</GroupedSection>
+      <GroupedSection title="Local">{renderRows(locationRows)}</GroupedSection>
+      <GroupedSection title="Datas">{renderRows(dateRows)}</GroupedSection>
 
       {isPending ? (
         <PayButton
@@ -167,57 +132,42 @@ const styles = StyleSheet.create({
     ...fonts.bold,
     fontSize: fontSize.title2,
     color: colors.label,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   subtitle: {
-    ...fonts.regular,
-    fontSize: fontSize.body,
-    color: colors.secondaryLabel,
-  },
-  amountCard: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  amountLabel: {
     ...fonts.regular,
     fontSize: fontSize.subheadline,
     color: colors.secondaryLabel,
   },
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+  },
+  amountLabel: {
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.secondaryLabel,
+    marginBottom: 2,
+  },
   amount: {
     ...fonts.bold,
-    fontSize: fontSize.largeTitle,
-    color: colors.tint,
-    letterSpacing: -0.5,
+    fontSize: fontSize.title2,
+    color: colors.label,
+    letterSpacing: -0.4,
+    fontVariant: ['tabular-nums'],
   },
   status: {
     ...fonts.medium,
-    fontSize: fontSize.footnote,
-    marginTop: spacing.xs,
+    fontSize: fontSize.subheadline,
   },
   statusPending: {
     color: colors.systemOrange,
   },
   statusPaid: {
     color: colors.systemGreen,
-  },
-  section: {
-    gap: spacing.sm,
-  },
-  sectionTitle: {
-    ...fonts.semibold,
-    fontSize: fontSize.footnote,
-    color: colors.secondaryLabel,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-    paddingHorizontal: spacing.xs,
-  },
-  card: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
   },
   detailRow: {
     paddingHorizontal: spacing.lg,
@@ -228,17 +178,12 @@ const styles = StyleSheet.create({
     ...fonts.regular,
     fontSize: fontSize.caption,
     color: colors.tertiaryLabel,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   detailValue: {
     ...fonts.regular,
     fontSize: fontSize.body,
     color: colors.label,
-  },
-  divider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.separator,
-  },
-  pressed: {
-    opacity: 0.6,
   },
 });

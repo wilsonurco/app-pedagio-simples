@@ -5,11 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PassageCard } from '@/components/PassageCard';
 import { PayButton } from '@/components/PayButton';
+import { GroupedList } from '@/components/ui/GroupedList';
 import { iconSize, iconStroke, X } from '@/components/ui/icons';
 import { usePassages } from '@/context/PassagesContext';
 import { formatBRL, sumPassagesAmount } from '@/data/mock';
 import { navigateBack } from '@/utils/navigation';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 export default function PaymentPassagesScreen() {
@@ -88,13 +89,17 @@ export default function PaymentPassagesScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.amountCard}>
-          <Text style={styles.amountLabel}>Total selecionado</Text>
-          <Text style={styles.amount}>{formatBRL(total)}</Text>
-          <Text style={styles.amountHint}>
-            {selectedIds.length} de {pendingPassages.length} passagens
-          </Text>
-        </View>
+        <GroupedList>
+          <View style={styles.amountRow}>
+            <View>
+              <Text style={styles.amountLabel}>Total selecionado</Text>
+              <Text style={styles.amount}>{formatBRL(total)}</Text>
+            </View>
+            <Text style={styles.amountHint}>
+              {selectedIds.length} de {pendingPassages.length}
+            </Text>
+          </View>
+        </GroupedList>
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Passagens</Text>
@@ -103,7 +108,7 @@ export default function PaymentPassagesScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.passagesCard}>
+        <GroupedList>
           {pendingPassages.map((passage, index) => (
             <PassageCard
               key={passage.id}
@@ -114,7 +119,7 @@ export default function PaymentPassagesScreen() {
               onToggleSelect={() => togglePassage(passage.id)}
             />
           ))}
-        </View>
+        </GroupedList>
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
@@ -166,28 +171,32 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
     gap: spacing.lg,
   },
-  amountCard: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
-    alignItems: 'center',
-    gap: spacing.xs,
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
   },
   amountLabel: {
     ...fonts.regular,
-    fontSize: fontSize.subheadline,
+    fontSize: fontSize.footnote,
     color: colors.secondaryLabel,
+    marginBottom: 2,
   },
   amount: {
     ...fonts.bold,
-    fontSize: fontSize.largeTitle,
-    color: colors.tint,
-    letterSpacing: -0.5,
+    fontSize: fontSize.title2,
+    color: colors.label,
+    letterSpacing: -0.4,
+    fontVariant: ['tabular-nums'],
   },
   amountHint: {
     ...fonts.regular,
-    fontSize: fontSize.footnote,
+    fontSize: fontSize.caption,
     color: colors.tertiaryLabel,
+    paddingBottom: 2,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -195,21 +204,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   sectionTitle: {
-    ...fonts.semibold,
+    ...fonts.regular,
     fontSize: fontSize.footnote,
-    color: colors.secondaryLabel,
+    color: colors.tertiaryLabel,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
   selectAll: {
     ...fonts.medium,
-    fontSize: fontSize.footnote,
+    fontSize: fontSize.subheadline,
     color: colors.tint,
-  },
-  passagesCard: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
   },
   footer: {
     paddingHorizontal: spacing.lg,

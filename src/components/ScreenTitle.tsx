@@ -20,11 +20,11 @@ export function ScreenTitle({ title, subtitle }: ScreenTitleProps) {
 const styles = StyleSheet.create({
   container: {
     gap: spacing.xs,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   title: {
     ...fonts.bold,
-    fontSize: fontSize.largeTitle,
+    fontSize: fontSize.title2,
     color: colors.label,
     letterSpacing: -0.4,
   },
@@ -32,5 +32,6 @@ const styles = StyleSheet.create({
     ...fonts.regular,
     fontSize: fontSize.subheadline,
     color: colors.secondaryLabel,
+    lineHeight: 20,
   },
 });

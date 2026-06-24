@@ -2,8 +2,9 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { PassageCard } from '@/components/PassageCard';
 import { type PassageStatusFilter } from '@/components/PassageStatusFilterTabs';
+import { GroupedList } from '@/components/ui/GroupedList';
 import { formatBRL } from '@/data/mock';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 import { MONTH_FULL_NAMES, type MonthPassageGroup } from '@/utils/history';
 
@@ -36,10 +37,12 @@ export function HistoryByMonth({ groups, selectedMonth, statusFilter = 'all' }: 
   if (visibleGroups.length === 0) {
     const empty = emptyMessages[statusFilter];
     return (
-      <View style={styles.empty}>
-        <Text style={styles.emptyTitle}>{empty.title}</Text>
-        <Text style={styles.emptySubtitle}>{empty.subtitle}</Text>
-      </View>
+      <GroupedList>
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle}>{empty.title}</Text>
+          <Text style={styles.emptySubtitle}>{empty.subtitle}</Text>
+        </View>
+      </GroupedList>
     );
   }
 
@@ -56,7 +59,7 @@ export function HistoryByMonth({ groups, selectedMonth, statusFilter = 'all' }: 
             {group.passages.length === 1 ? 'passagem' : 'passagens'}
           </Text>
 
-          <View style={styles.card}>
+          <GroupedList>
             {group.passages.map((passage, index) => (
               <PassageCard
                 key={passage.id}
@@ -64,7 +67,7 @@ export function HistoryByMonth({ groups, selectedMonth, statusFilter = 'all' }: 
                 showDivider={index < group.passages.length - 1}
               />
             ))}
-          </View>
+          </GroupedList>
         </View>
       ))}
     </View>
@@ -87,26 +90,21 @@ const styles = StyleSheet.create({
     ...fonts.semibold,
     fontSize: fontSize.title3,
     color: colors.label,
+    letterSpacing: -0.3,
   },
   sectionTotal: {
     ...fonts.semibold,
     fontSize: fontSize.body,
-    color: colors.tint,
+    color: colors.label,
+    fontVariant: ['tabular-nums'],
   },
   sectionHint: {
     ...fonts.regular,
     fontSize: fontSize.footnote,
-    color: colors.secondaryLabel,
+    color: colors.tertiaryLabel,
     marginTop: -spacing.xs,
   },
-  card: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-  },
   empty: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
     padding: spacing.xl,
     alignItems: 'center',
     gap: spacing.sm,

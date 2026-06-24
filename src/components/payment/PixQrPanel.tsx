@@ -6,7 +6,7 @@ import { Copy, iconStroke, iconStrokeActive, QrCode, Share2 } from '@/components
 import { formatBRL, merchantPix } from '@/data/mock';
 import { copyToClipboard } from '@/utils/copyToClipboard';
 import { formatDurationHms } from '@/utils/dateTime';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, radius, shadow, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type PixQrPanelProps = {
@@ -144,7 +144,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: spacing.md,
     backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
+    ...shadow.card,
     padding: spacing.lg,
   },
   infoIcon: {
@@ -172,7 +173,8 @@ const styles = StyleSheet.create({
   },
   qrCard: {
     backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
+    ...shadow.card,
     padding: spacing.lg,
     alignItems: 'center',
     gap: spacing.sm,
@@ -237,7 +239,8 @@ const styles = StyleSheet.create({
   },
   codeCard: {
     backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
+    ...shadow.card,
     padding: spacing.lg,
     gap: spacing.sm,
   },

@@ -15,6 +15,7 @@ import { FormField } from '@/components/FormField';
 import { PayButton } from '@/components/PayButton';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
+import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
 import { useVehicles } from '@/context/VehiclesContext';
 import { type Vehicle } from '@/data/mock';
 import {
@@ -146,7 +147,7 @@ export default function VehicleRegistrationScreen() {
           subtitle="Informe a placa para buscar os dados automaticamente"
         />
 
-        <View style={styles.card}>
+        <GroupedList>
           <FormField
             label="Placa"
             value={plate}
@@ -157,7 +158,7 @@ export default function VehicleRegistrationScreen() {
             maxLength={7}
           />
           <LookupFeedback status={lookupStatus} />
-          <View style={styles.divider} />
+          <GroupedDivider />
           <FormField
             label="Modelo"
             value={model}
@@ -165,7 +166,7 @@ export default function VehicleRegistrationScreen() {
             placeholder="Preenchido automaticamente"
             autoCorrect={false}
           />
-        </View>
+        </GroupedList>
 
         <Text style={styles.hintTitle}>Placas de exemplo na simulação</Text>
         <Text style={styles.hintText}>{simulatedPlateExamples.join(' • ')}</Text>
@@ -227,14 +228,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     gap: spacing.lg,
   },
-  card: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-  },
-  divider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.separator,
+  hintTitle: {
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.tertiaryLabel,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    paddingHorizontal: spacing.xs,
   },
   feedbackRow: {
     flexDirection: 'row',
@@ -261,14 +261,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.md,
     marginTop: -spacing.xs,
-  },
-  hintTitle: {
-    ...fonts.semibold,
-    fontSize: fontSize.caption,
-    color: colors.secondaryLabel,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-    paddingHorizontal: spacing.xs,
   },
   hintText: {
     ...fonts.regular,

@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Calendar, ChevronDown, iconStroke } from '@/components/ui/icons';
+import { ChevronRight, iconStroke } from '@/components/ui/icons';
+import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
 import { alerts } from '@/data/mock';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 export function RecentActivitySection() {
@@ -13,7 +14,7 @@ export function RecentActivitySection() {
   const hasAlert = alerts.some((a) => a.type === 'warning' || a.type === 'danger');
 
   return (
-    <View style={styles.container}>
+    <GroupedList>
       <Pressable
         onPress={() => {
           if (expanded) {
@@ -24,103 +25,74 @@ export function RecentActivitySection() {
         }}
         accessibilityRole="button"
         accessibilityLabel="Atividade recente"
-        style={({ pressed }) => [styles.header, pressed && styles.headerPressed]}
+        style={({ pressed }) => [styles.header, pressed && styles.pressed]}
       >
-        <View style={styles.left}>
-          <Calendar size={18} color={colors.tint} strokeWidth={iconStroke} />
+        <View style={styles.headerCopy}>
           <Text style={styles.title}>Atividade recente</Text>
-          {hasAlert ? (
-            <View style={styles.alertBadge}>
-              <Text style={styles.alertBadgeText}>Alerta</Text>
-            </View>
-          ) : null}
-          <Text style={styles.eventCount}>
+          <Text style={styles.subtitle}>
             {eventCount} {eventCount === 1 ? 'evento' : 'eventos'}
+            {hasAlert ? ' · atenção necessária' : ''}
           </Text>
         </View>
-        <ChevronDown size={18} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
+        <ChevronRight size={16} color={colors.quaternaryLabel} strokeWidth={iconStroke} />
       </Pressable>
 
-      {expanded ? (
-        <View style={styles.list}>
-          {alerts.map((alert) => (
-            <View key={alert.id} style={styles.item}>
-              <Text style={styles.itemTitle}>{alert.title}</Text>
-              <Text style={styles.itemDesc}>{alert.description}</Text>
+      {expanded
+        ? alerts.map((alert, index) => (
+            <View key={alert.id}>
+              <GroupedDivider />
+              <View style={styles.item}>
+                <Text style={styles.itemTitle}>{alert.title}</Text>
+                <Text style={styles.itemDesc}>{alert.description}</Text>
+              </View>
             </View>
-          ))}
-        </View>
-      ) : null}
-    </View>
+          ))
+        : null}
+    </GroupedList>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.secondaryBackground,
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.separator,
-    overflow: 'hidden',
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: spacing.md,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    minHeight: 52,
+    paddingVertical: spacing.lg,
+    minHeight: 44,
   },
-  headerPressed: {
-    backgroundColor: colors.fill,
+  pressed: {
+    opacity: 0.65,
   },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+  headerCopy: {
     flex: 1,
-    flexWrap: 'wrap',
+    gap: 2,
   },
   title: {
     ...fonts.semibold,
-    fontSize: fontSize.subheadline,
+    fontSize: fontSize.body,
     color: colors.label,
   },
-  alertBadge: {
-    backgroundColor: 'rgba(255, 59, 48, 0.12)',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-  },
-  alertBadgeText: {
-    ...fonts.semibold,
-    fontSize: fontSize.caption2,
-    color: colors.systemRed,
-  },
-  eventCount: {
+  subtitle: {
     ...fonts.regular,
     fontSize: fontSize.caption,
     color: colors.tertiaryLabel,
   },
-  list: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.separator,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-    gap: spacing.md,
-  },
   item: {
     gap: 2,
-    paddingTop: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   itemTitle: {
     ...fonts.medium,
-    fontSize: fontSize.footnote,
+    fontSize: fontSize.subheadline,
     color: colors.label,
   },
   itemDesc: {
     ...fonts.regular,
-    fontSize: fontSize.caption,
+    fontSize: fontSize.footnote,
     color: colors.secondaryLabel,
+    lineHeight: 18,
   },
 });
