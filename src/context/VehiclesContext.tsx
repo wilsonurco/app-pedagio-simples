@@ -2,16 +2,19 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react';
 
 import { normalizePlate } from '@/services/lookupVehicleByPlate';
-import { userProfile, type Vehicle } from '@/data/mock';
+import { loadStoredVehicles, saveStoredVehicles } from '@/utils/vehicleStorage';
+import { type Vehicle } from '@/data/mock';
 
 type VehiclesContextValue = {
   vehicles: Vehicle[];
+  isHydrated: boolean;
   primaryVehicle: Vehicle | undefined;
   hasVehicle: (plate: string) => boolean;
   getVehicle: (plate: string) => Vehicle | undefined;
@@ -22,7 +25,34 @@ type VehiclesContextValue = {
 const VehiclesContext = createContext<VehiclesContextValue | null>(null);
 
 export function VehiclesProvider({ children }: { children: ReactNode }) {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([userProfile.vehicle]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    loadStoredVehicles()
+      .then((stored) => {
+        if (!active) return;
+        if (stored !== null) {
+          setVehicles(stored);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setIsHydrated(true);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    saveStoredVehicles(vehicles).catch(() => undefined);
+  }, [vehicles, isHydrated]);
 
   const hasVehicle = useCallback(
     (plate: string) =>
@@ -72,13 +102,14 @@ export function VehiclesProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       vehicles,
+      isHydrated,
       primaryVehicle,
       hasVehicle,
       getVehicle,
       addVehicle,
       removeVehicle,
     }),
-    [vehicles, primaryVehicle, hasVehicle, getVehicle, addVehicle, removeVehicle],
+    [vehicles, isHydrated, primaryVehicle, hasVehicle, getVehicle, addVehicle, removeVehicle],
   );
 
   return <VehiclesContext.Provider value={value}>{children}</VehiclesContext.Provider>;

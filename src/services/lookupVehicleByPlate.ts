@@ -65,5 +65,3 @@ export async function lookupVehicleByPlate(plate: string): Promise<PlateLookupRe
 
   return lookupMock(normalized);
 }
-
-export const simulatedPlateExamples = Object.keys(SIMULATED_PLATE_REGISTRY);

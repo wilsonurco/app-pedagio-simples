@@ -24,7 +24,6 @@ import {
   isCompletePlate,
   lookupVehicleByPlate,
   normalizePlate,
-  simulatedPlateExamples,
 } from '@/services/lookupVehicleByPlate';
 import { navigateBack } from '@/utils/navigation';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
@@ -178,9 +177,6 @@ export default function VehicleRegistrationScreen() {
             autoCorrect={false}
           />
         </GroupedList>
-
-        <Text style={styles.hintTitle}>Placas de exemplo na simulação</Text>
-        <Text style={styles.hintText}>{simulatedPlateExamples.join(' • ')}</Text>
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
@@ -222,7 +218,7 @@ function LookupFeedback({ status }: { status: LookupStatus }) {
 
   return (
     <Text style={styles.feedbackError}>
-      Placa não encontrada. Verifique os dados ou tente uma placa de exemplo.
+      Placa não encontrada. Verifique os dados e tente novamente.
     </Text>
   );
 }
@@ -238,14 +234,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.lg,
     gap: spacing.lg,
-  },
-  hintTitle: {
-    ...fonts.regular,
-    fontSize: fontSize.footnote,
-    color: colors.tertiaryLabel,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-    paddingHorizontal: spacing.xs,
   },
   feedbackRow: {
     flexDirection: 'row',
@@ -272,14 +260,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.md,
     marginTop: -spacing.xs,
-  },
-  hintText: {
-    ...fonts.regular,
-    fontSize: fontSize.footnote,
-    color: colors.tertiaryLabel,
-    lineHeight: 20,
-    paddingHorizontal: spacing.xs,
-    marginTop: -spacing.sm,
   },
   footer: {
     paddingHorizontal: spacing.lg,

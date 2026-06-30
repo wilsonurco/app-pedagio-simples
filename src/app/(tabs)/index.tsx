@@ -17,18 +17,12 @@ import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { usePassageSelection } from '@/hooks/usePassageSelection';
 import { normalizePlate } from '@/services/lookupVehicleByPlate';
 import { colors, spacing } from '@/theme/tokens';
-import { compareAppDateTime } from '@/utils/dateTime';
-
-function getEarliestDueDate(passages: { dueDate?: string }[]) {
-  const withDue = passages.filter((p) => p.dueDate);
-  if (withDue.length === 0) return undefined;
-  return [...withDue].sort((a, b) => compareAppDateTime(a.dueDate!, b.dueDate!))[0]?.dueDate;
-}
+import { buildDashboardSummary } from '@/utils/dashboardSummary';
 
 export default function HomeScreen() {
   const topPadding = useAppTopPadding(spacing.sm);
   const { pendingPassages, pendingTotal, isLoading, loadError, refreshDebts } = usePassages();
-  const { vehicles } = useVehicles();
+  const { vehicles, isHydrated } = useVehicles();
   const [filter, setFilter] = useState<PassageFilter>('all');
   const [plateFilter, setPlateFilter] = useState<PlateFilter>('all');
 
@@ -51,10 +45,10 @@ export default function HomeScreen() {
   }, [vehicles, plateFilter]);
 
   useEffect(() => {
-    if (!isFiscalTechEnabled()) return;
+    if (!isFiscalTechEnabled() || !isHydrated) return;
     const plates = vehicles.map((vehicle) => vehicle.plate);
     refreshDebts(plates, { vehicleModels }).catch(() => undefined);
-  }, [vehicles, vehicleModels, refreshDebts]);
+  }, [vehicles, vehicleModels, refreshDebts, isHydrated]);
 
   const passagesByPlate = useMemo(() => {
     if (plateFilter === 'all') return pendingPassages;
@@ -97,6 +91,11 @@ export default function HomeScreen() {
 
   const hasPendingPassages = pendingPassages.length > 0;
 
+  const dashboardSummary = useMemo(
+    () => buildDashboardSummary(pendingPassages, pendingTotal, vehicles.length),
+    [pendingPassages, pendingTotal, vehicles.length],
+  );
+
   function handlePay() {
     const idsForFilter =
       filter === 'all'
@@ -125,12 +124,7 @@ export default function HomeScreen() {
         <View style={styles.stack}>
           <PromoBanner />
 
-          <DashboardGreeting
-            pendingCount={pendingPassages.length}
-            pendingTotal={pendingTotal}
-            dueDate={getEarliestDueDate(pendingPassages)}
-            vehicleCount={vehicles.length}
-          />
+          <DashboardGreeting summary={dashboardSummary} />
 
           {isFiscalTechEnabled() && isLoading ? (
             <View style={styles.loadingRow}>
