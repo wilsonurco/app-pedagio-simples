@@ -5,6 +5,7 @@ import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, View } from 
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { type PassageFilter } from '@/components/dashboard/FilterTabs';
+import { type PlateFilter } from '@/components/dashboard/VehiclePlateFilter';
 import { PassagesPaymentFooter } from '@/components/dashboard/PassagesPaymentFooter';
 import { PassagesToPayPanel } from '@/components/dashboard/PassagesToPayPanel';
 import { PromoBanner } from '@/components/dashboard/PromoBanner';
@@ -14,6 +15,7 @@ import { usePassages } from '@/context/PassagesContext';
 import { useVehicles } from '@/context/VehiclesContext';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { usePassageSelection } from '@/hooks/usePassageSelection';
+import { normalizePlate } from '@/services/lookupVehicleByPlate';
 import { colors, spacing } from '@/theme/tokens';
 import { compareAppDateTime } from '@/utils/dateTime';
 
@@ -28,14 +30,25 @@ export default function HomeScreen() {
   const { pendingPassages, pendingTotal, isLoading, loadError, refreshDebts } = usePassages();
   const { vehicles } = useVehicles();
   const [filter, setFilter] = useState<PassageFilter>('all');
+  const [plateFilter, setPlateFilter] = useState<PlateFilter>('all');
 
   const vehicleModels = useMemo(
     () =>
       Object.fromEntries(
-        vehicles.map((vehicle) => [vehicle.plate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(), vehicle.model]),
+        vehicles.map((vehicle) => [normalizePlate(vehicle.plate), vehicle.model]),
       ),
     [vehicles],
   );
+
+  useEffect(() => {
+    if (plateFilter === 'all') return;
+    const stillRegistered = vehicles.some(
+      (vehicle) => normalizePlate(vehicle.plate) === plateFilter,
+    );
+    if (!stillRegistered) {
+      setPlateFilter('all');
+    }
+  }, [vehicles, plateFilter]);
 
   useEffect(() => {
     if (!isFiscalTechEnabled()) return;
@@ -43,12 +56,33 @@ export default function HomeScreen() {
     refreshDebts(plates, { vehicleModels }).catch(() => undefined);
   }, [vehicles, vehicleModels, refreshDebts]);
 
-  const filteredPassages = useMemo(() => {
-    if (filter === 'all') return pendingPassages;
-    return pendingPassages.filter((p) => p.type === filter);
-  }, [pendingPassages, filter]);
+  const passagesByPlate = useMemo(() => {
+    if (plateFilter === 'all') return pendingPassages;
+    return pendingPassages.filter(
+      (passage) => normalizePlate(passage.plate) === plateFilter,
+    );
+  }, [pendingPassages, plateFilter]);
 
-  const { selectedIds, togglePassage } = usePassageSelection(pendingPassages);
+  const filteredPassages = useMemo(() => {
+    if (filter === 'all') return passagesByPlate;
+    return passagesByPlate.filter((p) => p.type === filter);
+  }, [passagesByPlate, filter]);
+
+  const passageCountByPlate = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const passage of pendingPassages) {
+      const normalized = normalizePlate(passage.plate);
+      counts[normalized] = (counts[normalized] ?? 0) + 1;
+    }
+    return counts;
+  }, [pendingPassages]);
+
+  const {
+    selectedIds,
+    togglePassage,
+    allVisibleSelected,
+    toggleAllVisible,
+  } = usePassageSelection(pendingPassages);
 
   const selectedTotal = useMemo(() => {
     const selected = pendingPassages.filter((p) => selectedIds.includes(p.id));
@@ -108,11 +142,18 @@ export default function HomeScreen() {
           {loadError ? <Text style={styles.errorText}>{loadError}</Text> : null}
 
           <PassagesToPayPanel
-            passages={filteredPassages}
+            passages={passagesByPlate}
+            allPassages={pendingPassages}
             selectedIds={selectedIds}
             filter={filter}
+            plateFilter={plateFilter}
+            vehicles={vehicles}
+            passageCountByPlate={passageCountByPlate}
+            allVisibleSelected={allVisibleSelected(filteredPassages)}
             onFilterChange={setFilter}
+            onPlateFilterChange={setPlateFilter}
             onTogglePassage={togglePassage}
+            onToggleAllVisible={() => toggleAllVisible(filteredPassages)}
           />
 
           <RecentActivitySection />

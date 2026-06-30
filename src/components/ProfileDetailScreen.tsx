@@ -74,35 +74,46 @@ export function ProfileDetailScreen({ title, description, items = [] }: DetailSc
           const key = typeof item === 'string' ? item : item.label;
           const hasThumbnail = imageSource !== undefined;
 
-          const trailing = (
-            <View style={styles.trailing}>
-              {onDelete ? (
-                <Pressable
-                  onPress={(event) => {
-                    event?.stopPropagation?.();
-                    onDelete();
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Excluir ${label}`}
-                  hitSlop={8}
-                  style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
-                >
-                  <Trash2 size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
-                </Pressable>
-              ) : null}
-              {route ? (
-                <ChevronRight size={16} color={colors.quaternaryLabel} strokeWidth={iconStroke} />
-              ) : null}
-            </View>
-          );
+          const deleteButton = onDelete ? (
+            <Pressable
+              onPress={onDelete}
+              accessibilityRole="button"
+              accessibilityLabel={`Excluir ${label}`}
+              hitSlop={8}
+              style={({ pressed }) => [styles.iconBtn, pressed && styles.pressed]}
+            >
+              <Trash2 size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
+            </Pressable>
+          ) : null;
 
-          const content = (
+          const rowBody = (
             <>
               {hasThumbnail ? <VehicleThumbnail imageSource={imageSource} label={label} /> : null}
               <Text style={styles.rowText}>{label}</Text>
-              {trailing}
+              {route ? (
+                <ChevronRight size={16} color={colors.quaternaryLabel} strokeWidth={iconStroke} />
+              ) : null}
             </>
           );
+
+          if (route && onDelete) {
+            return (
+              <View key={key}>
+                {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 56 + spacing.md : spacing.lg} /> : null}
+                <View style={[styles.row, hasThumbnail && styles.rowWithThumbnail]}>
+                  <Pressable
+                    onPress={() => router.push(route)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Visualizar ${label}`}
+                    style={({ pressed }) => [styles.rowMain, pressed && styles.pressed]}
+                  >
+                    {rowBody}
+                  </Pressable>
+                  {deleteButton}
+                </View>
+              </View>
+            );
+          }
 
           if (route) {
             return (
@@ -118,7 +129,7 @@ export function ProfileDetailScreen({ title, description, items = [] }: DetailSc
                     pressed && styles.pressed,
                   ]}
                 >
-                  {content}
+                  {rowBody}
                 </Pressable>
               </View>
             );
@@ -127,7 +138,10 @@ export function ProfileDetailScreen({ title, description, items = [] }: DetailSc
           return (
             <View key={key}>
               {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 56 + spacing.md : spacing.lg} /> : null}
-              <View style={[styles.row, hasThumbnail && styles.rowWithThumbnail]}>{content}</View>
+              <View style={[styles.row, hasThumbnail && styles.rowWithThumbnail]}>
+                {rowBody}
+                {deleteButton}
+              </View>
             </View>
           );
         })}
@@ -156,6 +170,13 @@ const styles = StyleSheet.create({
   rowWithThumbnail: {
     paddingVertical: spacing.md,
   },
+  rowMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    minHeight: 44,
+  },
   rowText: {
     flex: 1,
     ...fonts.regular,
@@ -178,11 +199,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.groupedBackground,
-  },
-  trailing: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
   },
   iconBtn: {
     width: 44,

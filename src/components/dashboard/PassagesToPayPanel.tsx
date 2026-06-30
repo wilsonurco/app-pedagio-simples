@@ -3,18 +3,32 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { DashboardPassageCard } from '@/components/dashboard/DashboardPassageCard';
 import { FilterTabs, type PassageFilter } from '@/components/dashboard/FilterTabs';
+import { SelectAllRow } from '@/components/dashboard/SelectAllRow';
+import {
+  VehiclePlateFilter,
+  type PlateFilter,
+} from '@/components/dashboard/VehiclePlateFilter';
 import { GroupedList } from '@/components/ui/GroupedList';
 import { Plus, iconStroke } from '@/components/ui/icons';
-import { type Passage } from '@/data/mock';
+import { isFiscalTechEnabled } from '@/config/dataSource';
+import { type Passage, type Vehicle } from '@/data/mock';
+import { isPassagePayable } from '@/services/fiscaltech/mappers';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type PassagesToPayPanelProps = {
   passages: Passage[];
+  allPassages: Passage[];
   selectedIds: string[];
   filter: PassageFilter;
+  plateFilter: PlateFilter;
+  vehicles: Vehicle[];
+  passageCountByPlate: Record<string, number>;
+  allVisibleSelected: boolean;
   onFilterChange: (filter: PassageFilter) => void;
+  onPlateFilterChange: (filter: PlateFilter) => void;
   onTogglePassage: (id: string) => void;
+  onToggleAllVisible: () => void;
 };
 
 function filterPassages(passages: Passage[], filter: PassageFilter) {
@@ -22,14 +36,29 @@ function filterPassages(passages: Passage[], filter: PassageFilter) {
   return passages.filter((p) => p.type === filter);
 }
 
+function countSelectable(passages: Passage[]) {
+  if (isFiscalTechEnabled()) {
+    return passages.filter(isPassagePayable).length;
+  }
+  return passages.length;
+}
+
 export function PassagesToPayPanel({
   passages,
+  allPassages,
   selectedIds,
   filter,
+  plateFilter,
+  vehicles,
+  passageCountByPlate,
+  allVisibleSelected,
   onFilterChange,
+  onPlateFilterChange,
   onTogglePassage,
+  onToggleAllVisible,
 }: PassagesToPayPanelProps) {
   const filtered = filterPassages(passages, filter);
+  const selectableCount = countSelectable(filtered);
 
   return (
     <View style={styles.panel}>
@@ -50,6 +79,13 @@ export function PassagesToPayPanel({
         </Pressable>
       </View>
 
+      <VehiclePlateFilter
+        vehicles={vehicles}
+        value={plateFilter}
+        onChange={onPlateFilterChange}
+        passageCountByPlate={passageCountByPlate}
+      />
+
       <FilterTabs value={filter} onChange={onFilterChange} />
 
       {filtered.length > 0 ? (
@@ -57,6 +93,12 @@ export function PassagesToPayPanel({
           {filtered.length} {filtered.length === 1 ? 'pendência' : 'pendências'}
         </Text>
       ) : null}
+
+      <SelectAllRow
+        allSelected={allVisibleSelected}
+        selectableCount={selectableCount}
+        onToggleAll={onToggleAllVisible}
+      />
 
       <GroupedList>
         {filtered.map((passage, index) => (
@@ -69,6 +111,10 @@ export function PassagesToPayPanel({
           />
         ))}
       </GroupedList>
+
+      {filtered.length === 0 && allPassages.length > 0 ? (
+        <Text style={styles.emptyFilter}>Nenhuma passagem neste filtro.</Text>
+      ) : null}
     </View>
   );
 }
@@ -119,5 +165,12 @@ const styles = StyleSheet.create({
     fontSize: fontSize.footnote,
     color: colors.tertiaryLabel,
     marginTop: -spacing.xs,
+  },
+  emptyFilter: {
+    ...fonts.regular,
+    fontSize: fontSize.subheadline,
+    color: colors.secondaryLabel,
+    textAlign: 'center',
+    paddingVertical: spacing.lg,
   },
 });

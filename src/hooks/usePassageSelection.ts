@@ -44,6 +44,28 @@ export function usePassageSelection(pendingPassages: Passage[], initialSelected?
   const total = sumPassagesAmount(selectedPassages);
   const allSelected = selectableIds.length > 0 && selectedIds.length === selectableIds.length;
 
+  function getVisibleSelectableIds(visiblePassages: Passage[]) {
+    return getSelectableIds(visiblePassages);
+  }
+
+  function allVisibleSelected(visiblePassages: Passage[]) {
+    const visibleSelectable = getVisibleSelectableIds(visiblePassages);
+    return visibleSelectable.length > 0 && visibleSelectable.every((id) => selectedIds.includes(id));
+  }
+
+  function toggleAllVisible(visiblePassages: Passage[]) {
+    const visibleSelectable = getVisibleSelectableIds(visiblePassages);
+    if (visibleSelectable.length === 0) return;
+
+    setSelectedIds((current) => {
+      const everySelected = visibleSelectable.every((id) => current.includes(id));
+      if (everySelected) {
+        return current.filter((id) => !visibleSelectable.includes(id));
+      }
+      return [...new Set([...current, ...visibleSelectable])];
+    });
+  }
+
   function togglePassage(id: string) {
     if (isFiscalTechEnabled()) {
       const passage = pendingPassages.find((item) => item.id === id);
@@ -64,7 +86,9 @@ export function usePassageSelection(pendingPassages: Passage[], initialSelected?
     selectedPassages,
     total,
     allSelected,
+    allVisibleSelected,
     togglePassage,
     toggleAll,
+    toggleAllVisible,
   };
 }
