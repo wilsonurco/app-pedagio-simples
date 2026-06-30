@@ -49,6 +49,9 @@ export function DashboardPassageCard({
 }: DashboardPassageCardProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const typeLabel = passageTypeLabels[passage.type];
+  const isUnavailable = passage.disponivel === false;
+  const statusLabel = isUnavailable ? 'Indisponível' : passage.vencida ? 'Vencida' : 'Pendente';
+  const statusColor = isUnavailable ? colors.tertiaryLabel : colors.systemOrange;
 
   function toggleExpanded() {
     setExpanded((current) => !current);
@@ -58,12 +61,16 @@ export function DashboardPassageCard({
     <View style={[styles.wrapper, selected && styles.wrapperSelected]}>
       <View style={styles.row}>
         <Pressable
-          onPress={onToggleSelect}
+          onPress={isUnavailable ? undefined : onToggleSelect}
           accessibilityRole="checkbox"
-          accessibilityState={{ checked: selected }}
+          accessibilityState={{ checked: selected, disabled: isUnavailable }}
           accessibilityLabel={`Selecionar passagem ${passage.passageId}`}
           hitSlop={8}
-          style={[styles.checkbox, selected && styles.checkboxSelected]}
+          style={[
+            styles.checkbox,
+            selected && styles.checkboxSelected,
+            isUnavailable && styles.checkboxDisabled,
+          ]}
         >
           {selected ? <Check size={12} color={colors.onTint} strokeWidth={2.5} /> : null}
         </Pressable>
@@ -83,7 +90,7 @@ export function DashboardPassageCard({
               <View style={styles.tagRow}>
                 <Text style={styles.typeTag}>{typeLabel}</Text>
                 <Text style={styles.metaDot}>·</Text>
-                <Text style={styles.statusTag}>Pendente</Text>
+                <Text style={[styles.statusTag, { color: statusColor }]}>{statusLabel}</Text>
               </View>
             </View>
 
@@ -106,6 +113,9 @@ export function DashboardPassageCard({
               Vence {formatDateDisplay(passage.dueDate)} · {passage.plate} ·{' '}
               {formatPassageIdNumeric(passage.passageId)}
             </Text>
+            {isUnavailable && passage.motivoIndisponivel ? (
+              <Text style={styles.unavailableHint}>{passage.motivoIndisponivel}</Text>
+            ) : null}
           </View>
         </Pressable>
       </View>
@@ -155,6 +165,9 @@ const styles = StyleSheet.create({
   checkboxSelected: {
     borderColor: colors.tint,
     backgroundColor: colors.tint,
+  },
+  checkboxDisabled: {
+    opacity: 0.35,
   },
   content: {
     flex: 1,
@@ -222,6 +235,11 @@ const styles = StyleSheet.create({
     fontSize: fontSize.caption,
     color: colors.tertiaryLabel,
     fontVariant: ['tabular-nums'],
+  },
+  unavailableHint: {
+    ...fonts.regular,
+    fontSize: fontSize.caption2,
+    color: colors.secondaryLabel,
   },
   details: {
     gap: spacing.md,

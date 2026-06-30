@@ -113,6 +113,7 @@ export function buildReceiptHtml(passage: Passage): string {
       ${row('ID da passagem', passage.passageId)}
       ${row('Data do pagamento', formatDateTimeDisplay(passage.paidAt))}
       ${row('Forma de pagamento', passage.paymentMethod ?? '—')}
+      ${passage.fiscalProtocol ? row('Protocolo FiscalTech', passage.fiscalProtocol) : ''}
     </table>
   </div>
 

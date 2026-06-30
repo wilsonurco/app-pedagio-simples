@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { router } from 'expo-router';
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
@@ -9,6 +9,7 @@ import { PassagesPaymentFooter } from '@/components/dashboard/PassagesPaymentFoo
 import { PassagesToPayPanel } from '@/components/dashboard/PassagesToPayPanel';
 import { PromoBanner } from '@/components/dashboard/PromoBanner';
 import { RecentActivitySection } from '@/components/dashboard/RecentActivitySection';
+import { isFiscalTechEnabled } from '@/config/dataSource';
 import { usePassages } from '@/context/PassagesContext';
 import { useVehicles } from '@/context/VehiclesContext';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
@@ -24,9 +25,23 @@ function getEarliestDueDate(passages: { dueDate?: string }[]) {
 
 export default function HomeScreen() {
   const topPadding = useAppTopPadding(spacing.sm);
-  const { pendingPassages, pendingTotal } = usePassages();
+  const { pendingPassages, pendingTotal, isLoading, loadError, refreshDebts } = usePassages();
   const { vehicles } = useVehicles();
   const [filter, setFilter] = useState<PassageFilter>('all');
+
+  const vehicleModels = useMemo(
+    () =>
+      Object.fromEntries(
+        vehicles.map((vehicle) => [vehicle.plate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(), vehicle.model]),
+      ),
+    [vehicles],
+  );
+
+  useEffect(() => {
+    if (!isFiscalTechEnabled()) return;
+    const plates = vehicles.map((vehicle) => vehicle.plate);
+    refreshDebts(plates, { vehicleModels }).catch(() => undefined);
+  }, [vehicles, vehicleModels, refreshDebts]);
 
   const filteredPassages = useMemo(() => {
     if (filter === 'all') return pendingPassages;
@@ -83,6 +98,15 @@ export default function HomeScreen() {
             vehicleCount={vehicles.length}
           />
 
+          {isFiscalTechEnabled() && isLoading ? (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator color={colors.tint} />
+              <Text style={styles.loadingText}>Consultando débitos...</Text>
+            </View>
+          ) : null}
+
+          {loadError ? <Text style={styles.errorText}>{loadError}</Text> : null}
+
           <PassagesToPayPanel
             passages={filteredPassages}
             selectedIds={selectedIds}
@@ -134,5 +158,16 @@ const styles = StyleSheet.create({
   },
   stack: {
     gap: spacing.lg,
+  },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  loadingText: {
+    color: colors.secondaryLabel,
+  },
+  errorText: {
+    color: colors.systemRed,
   },
 });

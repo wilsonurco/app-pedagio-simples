@@ -17,6 +17,8 @@ import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
 import { useVehicles } from '@/context/VehiclesContext';
+import { isFiscalTechEnabled } from '@/config/dataSource';
+import { usePassages } from '@/context/PassagesContext';
 import { type Vehicle } from '@/data/mock';
 import {
   isCompletePlate,
@@ -38,6 +40,7 @@ function formatPlate(value: string) {
 export default function VehicleRegistrationScreen() {
   const insets = useSafeAreaInsets();
   const { addVehicle, hasVehicle } = useVehicles();
+  const { refreshDebts } = usePassages();
   const [plate, setPlate] = useState('');
   const [model, setModel] = useState('');
   const [status, setStatus] = useState<Status>('idle');
@@ -102,6 +105,14 @@ export default function VehicleRegistrationScreen() {
 
     setRegisteredVehicle(vehicle);
     setStatus('saving');
+
+    if (isFiscalTechEnabled()) {
+      refreshDebts([normalizedPlate], { vehicleModels: { [normalizedPlate]: vehicle.model } })
+        .catch(() => undefined)
+        .finally(() => setStatus('success'));
+      return;
+    }
+
     setTimeout(() => setStatus('success'), 900);
   }
 

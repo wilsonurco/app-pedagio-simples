@@ -12,9 +12,15 @@ type PaymentSuccessViewProps = {
   passageCount: number;
   total: number;
   paymentMethod: string;
+  protocol?: string;
 };
 
-export function PaymentSuccessView({ passageCount, total, paymentMethod }: PaymentSuccessViewProps) {
+export function PaymentSuccessView({
+  passageCount,
+  total,
+  paymentMethod,
+  protocol,
+}: PaymentSuccessViewProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -27,6 +33,7 @@ export function PaymentSuccessView({ passageCount, total, paymentMethod }: Payme
         {passageCount} {passageCount === 1 ? 'passagem paga' : 'passagens pagas'} • {formatBRL(total)}
       </Text>
       <Text style={styles.method}>via {paymentMethod}</Text>
+      {protocol ? <Text style={styles.protocol}>Protocolo: {protocol}</Text> : null}
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
         <PayButton label="Concluir" onPress={navigateHome} />
@@ -70,6 +77,13 @@ const styles = StyleSheet.create({
     fontSize: fontSize.footnote,
     color: colors.tertiaryLabel,
     marginTop: spacing.xs,
+  },
+  protocol: {
+    ...fonts.regular,
+    fontSize: fontSize.caption,
+    color: colors.secondaryLabel,
+    marginTop: spacing.xs,
+    textAlign: 'center',
   },
   footer: {
     position: 'absolute',

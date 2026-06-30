@@ -1,16 +1,20 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PayButton } from '@/components/PayButton';
+import { PaymentErrorBanner } from '@/components/payment/PaymentErrorBanner';
 import { PaymentSuccessView } from '@/components/payment/PaymentSuccessView';
 import { PaymentSummaryCard } from '@/components/payment/PaymentSummaryCard';
 import { PixQrPanel } from '@/components/payment/PixQrPanel';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { QrCode, iconStrokeActive } from '@/components/ui/icons';
+import { isFiscalTechEnabled } from '@/config/dataSource';
 import { usePassages } from '@/context/PassagesContext';
 import { formatBRL } from '@/data/mock';
+import { usePaymentReservation } from '@/hooks/usePaymentReservation';
 import { useSelectedPassages } from '@/hooks/useSelectedPassages';
+import { formatDurationHms } from '@/utils/dateTime';
 import { generatePixEmvCode } from '@/utils/pixCode';
 import { navigateBack } from '@/utils/navigation';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
@@ -21,13 +25,30 @@ type Status = 'idle' | 'processing' | 'success';
 type PaymentResult = {
   passageCount: number;
   total: number;
+  protocol?: string;
 };
 
 export default function PixPaymentScreen() {
   const insets = useSafeAreaInsets();
-  const { markAsPaid } = usePassages();
-  const { selectedParam, selectedIds, pendingSelectedIds, total, hasSelection, canPay } =
-    useSelectedPassages();
+  const fiscaltechEnabled = isFiscalTechEnabled();
+  const { markAsPaid, refreshDebts } = usePassages();
+  const {
+    selectedParam,
+    selectedIds,
+    pendingSelectedIds,
+    payableSelectedPassages,
+    total,
+    hasSelection,
+    canPay,
+  } = useSelectedPassages();
+
+  const payableIds = payableSelectedPassages.map((passage) => passage.id);
+  const passageCount = fiscaltechEnabled ? payableIds.length : pendingSelectedIds.length;
+
+  const reservationFlow = usePaymentReservation({
+    passages: payableSelectedPassages,
+    enabled: fiscaltechEnabled && canPay,
+  });
 
   const [codeGenerated, setCodeGenerated] = useState(false);
   const [codeSeed, setCodeSeed] = useState(0);
@@ -51,19 +72,52 @@ export default function PixPaymentScreen() {
     setCodeSeed((current) => current + 1);
   }
 
-  function handleConfirmPayment() {
+  async function handleConfirmPayment() {
     if (!canPay || !codeGenerated) return;
 
     setPaymentResult({
-      passageCount: pendingSelectedIds.length,
+      passageCount,
       total,
     });
     setStatus('processing');
 
-    setTimeout(() => {
-      markAsPaid(pendingSelectedIds, 'Pix');
-      setStatus('success');
-    }, 1400);
+    try {
+      if (fiscaltechEnabled) {
+        const response = await reservationFlow.confirmPayment('PIX');
+        markAsPaid(payableIds, 'Pix', response.protocolo);
+        setPaymentResult({
+          passageCount,
+          total,
+          protocol: response.protocolo,
+        });
+        setStatus('success');
+        return;
+      }
+
+      setTimeout(() => {
+        markAsPaid(pendingSelectedIds, 'Pix');
+        setStatus('success');
+      }, 1400);
+    } catch {
+      setStatus('idle');
+    }
+  }
+
+  async function handleReservationRecovery() {
+    if (reservationFlow.errorAction === 'refresh') {
+      const plates = [...new Set(payableSelectedPassages.map((passage) => passage.plate))];
+      await refreshDebts(plates).catch(() => undefined);
+      navigateBack({ fallback: '/pagar-forma', params: { selected: selectedParam } });
+      return;
+    }
+
+    if (reservationFlow.errorAction === 'retry-reservation') {
+      reservationFlow.resetReservation();
+      await reservationFlow.createReservation().catch(() => undefined);
+      return;
+    }
+
+    navigateBack({ fallback: '/pagar-forma', params: { selected: selectedParam } });
   }
 
   if (status === 'success' && paymentResult) {
@@ -72,6 +126,7 @@ export default function PixPaymentScreen() {
         passageCount={paymentResult.passageCount}
         total={paymentResult.total}
         paymentMethod="Pix"
+        protocol={paymentResult.protocol}
       />
     );
   }
@@ -80,11 +135,11 @@ export default function PixPaymentScreen() {
     return (
       <View style={[styles.container, styles.center, { paddingTop: insets.top }]}>
         <Text style={styles.emptyTitle}>
-          {hasSelection ? 'Passagens já pagas' : 'Nenhuma passagem selecionada'}
+          {hasSelection ? 'Passagens indisponíveis' : 'Nenhuma passagem selecionada'}
         </Text>
         <Text style={styles.emptySubtitle}>
           {hasSelection
-            ? 'Estas passagens já foram quitadas.'
+            ? 'Estas passagens não estão disponíveis para pagamento no momento.'
             : 'Volte e escolha as passagens que deseja pagar.'}
         </Text>
         <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
@@ -93,6 +148,9 @@ export default function PixPaymentScreen() {
       </View>
     );
   }
+
+  const reservationBlocked =
+    fiscaltechEnabled && (reservationFlow.isReserving || !reservationFlow.reservation);
 
   return (
     <View style={styles.container}>
@@ -118,7 +176,34 @@ export default function PixPaymentScreen() {
           </Text>
         </View>
 
-        <PaymentSummaryCard total={total} passageCount={pendingSelectedIds.length} />
+        {fiscaltechEnabled && reservationFlow.secondsRemaining !== null ? (
+          <Text style={styles.reservationTimer}>
+            Reserva válida por {formatDurationHms(reservationFlow.secondsRemaining)}
+          </Text>
+        ) : null}
+
+        {reservationFlow.errorMessage ? (
+          <PaymentErrorBanner
+            message={reservationFlow.errorMessage}
+            actionLabel={
+              reservationFlow.errorAction === 'refresh'
+                ? 'Atualizar débitos'
+                : reservationFlow.errorAction === 'retry-reservation'
+                  ? 'Tentar novamente'
+                  : 'Voltar'
+            }
+            onAction={handleReservationRecovery}
+          />
+        ) : null}
+
+        <PaymentSummaryCard total={total} passageCount={passageCount} />
+
+        {reservationFlow.isReserving ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator color={colors.tint} />
+            <Text style={styles.loadingText}>Reservando passagens...</Text>
+          </View>
+        ) : null}
 
         {!codeGenerated ? (
           <View style={styles.promptCard}>
@@ -143,11 +228,16 @@ export default function PixPaymentScreen() {
         {codeGenerated ? (
           <PayButton
             label={`Confirmar pagamento ${formatBRL(total)}`}
-            loading={status === 'processing'}
+            loading={status === 'processing' || reservationFlow.isConfirming}
+            disabled={reservationBlocked}
             onPress={handleConfirmPayment}
           />
         ) : (
-          <PayButton label="Gerar código Pix" onPress={handleGenerateCode} />
+          <PayButton
+            label="Gerar código Pix"
+            disabled={reservationBlocked}
+            onPress={handleGenerateCode}
+          />
         )}
       </View>
     </View>
@@ -182,6 +272,11 @@ const styles = StyleSheet.create({
     fontSize: fontSize.subheadline,
     color: colors.secondaryLabel,
     lineHeight: 21,
+  },
+  reservationTimer: {
+    ...fonts.medium,
+    fontSize: fontSize.footnote,
+    color: colors.tint,
   },
   sectionTitle: {
     ...fonts.semibold,
@@ -222,6 +317,16 @@ const styles = StyleSheet.create({
     color: colors.secondaryLabel,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  loadingBox: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+  },
+  loadingText: {
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.secondaryLabel,
   },
   footer: {
     paddingHorizontal: spacing.lg,

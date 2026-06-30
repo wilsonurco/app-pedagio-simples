@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 
+import { isFiscalTechEnabled } from '@/config/dataSource';
 import { usePassages } from '@/context/PassagesContext';
+import { isPassagePayable } from '@/services/fiscaltech/mappers';
 import { sumPassagesAmount } from '@/data/mock';
 
 export function useSelectedPassages() {
@@ -15,25 +17,37 @@ export function useSelectedPassages() {
     return ids.filter((id) => knownIds.has(id));
   }, [selectedParam, passages]);
 
-  const pendingSelectedIds = useMemo(
-    () => selectedIds.filter((id) => pendingPassages.some((p) => p.id === id)),
-    [selectedIds, pendingPassages],
-  );
+  const pendingSelectedIds = useMemo(() => {
+    const pendingIds = new Set(pendingPassages.map((passage) => passage.id));
+    return selectedIds.filter((id) => pendingIds.has(id));
+  }, [selectedIds, pendingPassages]);
 
   const selectedPassages = useMemo(
     () => passages.filter((p) => selectedIds.includes(p.id)),
     [passages, selectedIds],
   );
 
-  const total = sumPassagesAmount(selectedPassages);
+  const payableSelectedPassages = useMemo(() => {
+    if (!isFiscalTechEnabled()) {
+      return selectedPassages.filter((passage) => passage.status === 'pending');
+    }
+    return selectedPassages.filter(isPassagePayable);
+  }, [selectedPassages]);
+
+  const total = sumPassagesAmount(
+    isFiscalTechEnabled() ? payableSelectedPassages : selectedPassages.filter((p) => p.status === 'pending'),
+  );
 
   return {
     selectedParam,
     selectedIds,
     pendingSelectedIds,
     selectedPassages,
+    payableSelectedPassages,
     total,
     hasSelection: selectedIds.length > 0,
-    canPay: pendingSelectedIds.length > 0,
+    canPay: isFiscalTechEnabled()
+      ? payableSelectedPassages.length > 0
+      : pendingSelectedIds.length > 0,
   };
 }

@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "@vercel/node": "^5.3.0",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -48,6 +49,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "build": "expo export -p web",
+    "homolog:smoke": "node scripts/homolog-smoke.mjs",
+    "vercel:sync-homolog": "node scripts/vercel-sync-homolog-env.mjs",
     "lint": "expo lint"
   },
   "private": true

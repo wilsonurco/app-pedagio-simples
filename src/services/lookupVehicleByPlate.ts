@@ -1,7 +1,10 @@
-/** Simulação de consulta de veículo por placa (substituir por API real). */
+/** Consulta de veículo por placa — mock local ou débitos FiscalTech. */
+
+import { isFiscalTechEnabled } from '@/config/dataSource';
+import { consultarDebitos } from '@/services/fiscaltech/client';
 
 export type PlateLookupResult =
-  | { found: true; plate: string; model: string }
+  | { found: true; plate: string; model: string; hasDebts: boolean }
   | { found: false; plate: string };
 
 const SIMULATED_PLATE_REGISTRY: Record<string, string> = {
@@ -25,17 +28,42 @@ export function isCompletePlate(plate: string) {
   return normalizePlate(plate).length === 7;
 }
 
+async function lookupMock(plate: string): Promise<PlateLookupResult> {
+  await new Promise((resolve) => setTimeout(resolve, LOOKUP_DELAY_MS));
+
+  const model = SIMULATED_PLATE_REGISTRY[plate];
+  if (model) {
+    return { found: true, plate, model, hasDebts: true };
+  }
+
+  return { found: false, plate };
+}
+
+async function lookupFiscalTech(plate: string): Promise<PlateLookupResult> {
+  const response = await consultarDebitos({ placas: [plate], placaInternacional: false });
+  const resultado = response.resultados?.find((item) => item.placa === plate);
+  const transacoes = resultado?.transacoes ?? [];
+
+  if (transacoes.length === 0) {
+    return { found: false, plate };
+  }
+
+  return {
+    found: true,
+    plate,
+    model: 'Veículo',
+    hasDebts: true,
+  };
+}
+
 export async function lookupVehicleByPlate(plate: string): Promise<PlateLookupResult> {
   const normalized = normalizePlate(plate);
 
-  await new Promise((resolve) => setTimeout(resolve, LOOKUP_DELAY_MS));
-
-  const model = SIMULATED_PLATE_REGISTRY[normalized];
-  if (model) {
-    return { found: true, plate: normalized, model };
+  if (isFiscalTechEnabled()) {
+    return lookupFiscalTech(normalized);
   }
 
-  return { found: false, plate: normalized };
+  return lookupMock(normalized);
 }
 
 export const simulatedPlateExamples = Object.keys(SIMULATED_PLATE_REGISTRY);

@@ -36,6 +36,13 @@ export type Passage = {
   paymentMethod?: string;
   lane?: string;
   gantry?: string;
+  /** FiscalTech: transação disponível para reserva/pagamento */
+  disponivel?: boolean;
+  motivoIndisponivel?: string;
+  vencida?: boolean;
+  reservadoAte?: string;
+  /** Protocolo de confirmação FiscalTech */
+  fiscalProtocol?: string;
 };
 
 /** @deprecated Use Passage */
