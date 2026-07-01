@@ -1,6 +1,6 @@
 import { type Passage } from '@/data/mock';
 import { normalizePlate } from '@/services/lookupVehicleByPlate';
-import { compareAppDateTime } from '@/utils/dateTime';
+import { compareAppDateTime, formatDateDisplay } from '@/utils/dateTime';
 
 export type DueDateSummary = {
   earliest: string;
@@ -50,6 +50,22 @@ export function formatVehicleSummary(vehicleCount: number, platesWithDebt: numbe
   }
 
   return `${vehicleCount} veículos · ${platesWithDebt} com débito`;
+}
+
+export function formatCompactVehicleHint(vehicleCount: number, platesWithDebt: number) {
+  if (vehicleCount <= 0) return undefined;
+  if (vehicleCount === 1) return '1 veículo';
+  if (platesWithDebt === 0 || platesWithDebt === vehicleCount) {
+    return `${vehicleCount} veículos`;
+  }
+  if (platesWithDebt === 1) return `${vehicleCount} veículos · 1 com débito`;
+  return `${vehicleCount} veículos · ${platesWithDebt} com débito`;
+}
+
+export function formatCompactDueHint(dueDateSummary: DueDateSummary) {
+  const date = formatDateDisplay(dueDateSummary.earliest);
+  if (dueDateSummary.uniqueCount <= 1) return `Vence ${date}`;
+  return `Vence ${date} (+${dueDateSummary.uniqueCount - 1} datas)`;
 }
 
 export function formatIdleVehicleHint(vehicleCount: number) {

@@ -21,7 +21,9 @@ import { isFiscalTechEnabled } from '@/config/dataSource';
 import { usePassages } from '@/context/PassagesContext';
 import { type Vehicle } from '@/data/mock';
 import {
+  getInvalidPlateMessage,
   isCompletePlate,
+  isValidBrazilianPlate,
   lookupVehicleByPlate,
   normalizePlate,
 } from '@/services/lookupVehicleByPlate';
@@ -30,7 +32,7 @@ import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type Status = 'idle' | 'saving' | 'success';
-type LookupStatus = 'idle' | 'loading' | 'found' | 'not_found' | 'duplicate';
+type LookupStatus = 'idle' | 'loading' | 'found' | 'not_found' | 'duplicate' | 'invalid_format' | 'lookup_error';
 
 function formatPlate(value: string) {
   return normalizePlate(value).slice(0, 7);
@@ -44,6 +46,7 @@ export default function VehicleRegistrationScreen() {
   const [model, setModel] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [lookupStatus, setLookupStatus] = useState<LookupStatus>('idle');
+  const [lookupMessage, setLookupMessage] = useState<string | undefined>();
   const [registeredVehicle, setRegisteredVehicle] = useState<Vehicle | null>(null);
 
   const isReady = lookupStatus === 'found' && model.trim().length >= 2;
@@ -54,32 +57,62 @@ export default function VehicleRegistrationScreen() {
     if (!isCompletePlate(plate)) {
       setModel('');
       setLookupStatus('idle');
+      setLookupMessage(undefined);
       return;
     }
 
     const normalizedPlate = normalizePlate(plate);
 
+    if (!isValidBrazilianPlate(normalizedPlate)) {
+      setModel('');
+      setLookupStatus('invalid_format');
+      setLookupMessage(getInvalidPlateMessage(normalizedPlate));
+      return;
+    }
+
     if (hasVehicle(normalizedPlate)) {
       setModel('');
       setLookupStatus('duplicate');
+      setLookupMessage(undefined);
       return;
     }
 
     let cancelled = false;
     setLookupStatus('loading');
+    setLookupMessage(undefined);
     setModel('');
 
-    lookupVehicleByPlate(normalizedPlate).then((result) => {
-      if (cancelled) return;
+    lookupVehicleByPlate(normalizedPlate)
+      .then((result) => {
+        if (cancelled) return;
 
-      if (result.found) {
-        setModel(result.model);
-        setLookupStatus('found');
-        return;
-      }
+        if (result.found) {
+          setModel(result.model);
+          setLookupStatus('found');
+          setLookupMessage(undefined);
+          return;
+        }
 
-      setLookupStatus('not_found');
-    });
+        if (result.reason === 'invalid_format') {
+          setLookupStatus('invalid_format');
+          setLookupMessage(result.message);
+          return;
+        }
+
+        if (result.reason === 'api_error') {
+          setLookupStatus('lookup_error');
+          setLookupMessage(result.message);
+          return;
+        }
+
+        setLookupStatus('not_found');
+        setLookupMessage(undefined);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLookupStatus('lookup_error');
+        setLookupMessage('Não foi possível consultar a placa. Tente novamente.');
+      });
 
     return () => {
       cancelled = true;
@@ -167,7 +200,7 @@ export default function VehicleRegistrationScreen() {
             autoCorrect={false}
             maxLength={7}
           />
-          <LookupFeedback status={lookupStatus} />
+          <LookupFeedback status={lookupStatus} message={lookupMessage} />
           <GroupedDivider />
           <FormField
             label="Modelo"
@@ -191,7 +224,7 @@ export default function VehicleRegistrationScreen() {
   );
 }
 
-function LookupFeedback({ status }: { status: LookupStatus }) {
+function LookupFeedback({ status, message }: { status: LookupStatus; message?: string }) {
   if (status === 'idle') return null;
 
   if (status === 'loading') {
@@ -214,6 +247,22 @@ function LookupFeedback({ status }: { status: LookupStatus }) {
 
   if (status === 'duplicate') {
     return <Text style={styles.feedbackError}>Este veículo já está cadastrado na sua conta.</Text>;
+  }
+
+  if (status === 'invalid_format') {
+    return (
+      <Text style={styles.feedbackError}>
+        {message ?? 'Formato inválido. Use Mercosul (ABC1D23) ou antigo (ABC1234).'}
+      </Text>
+    );
+  }
+
+  if (status === 'lookup_error') {
+    return (
+      <Text style={styles.feedbackError}>
+        {message ?? 'Não foi possível consultar a placa. Tente novamente.'}
+      </Text>
+    );
   }
 
   return (

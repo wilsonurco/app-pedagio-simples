@@ -122,8 +122,6 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.stack}>
-          <PromoBanner />
-
           <DashboardGreeting summary={dashboardSummary} />
 
           {isFiscalTechEnabled() && isLoading ? (
@@ -151,6 +149,8 @@ export default function HomeScreen() {
           />
 
           <RecentActivitySection />
+
+          <PromoBanner />
         </View>
       </ScrollView>
 
@@ -188,11 +188,11 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
+    paddingTop: spacing.sm,
     paddingBottom: spacing.lg,
   },
   stack: {
-    gap: spacing.lg,
+    gap: spacing.md,
   },
   loadingRow: {
     flexDirection: 'row',
