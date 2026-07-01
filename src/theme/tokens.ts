@@ -40,6 +40,7 @@ export const colors = {
 
   // Dashboard
   promoBackground: '#2A1F4E',
+  promoBannerSurface: '#FAE07C',
   promoAccent: '#7C5CBF',
   badgePurpleBg: 'rgba(91, 46, 140, 0.12)',
   badgeOrangeBg: 'rgba(255, 149, 0, 0.12)',

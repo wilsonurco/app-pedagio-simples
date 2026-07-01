@@ -1,20 +1,27 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GroupedList } from '@/components/ui/GroupedList';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
+const MOVE_MAIS_URL = 'https://movemais.com';
+
 type PromoBannerProps = {
   onPress?: () => void;
 };
 
-export function PromoBanner({ onPress }: PromoBannerProps) {
+function openMoveMaisSite() {
+  Linking.openURL(MOVE_MAIS_URL).catch(() => undefined);
+}
+
+export function PromoBanner({ onPress = openMoveMaisSite }: PromoBannerProps) {
   return (
-    <GroupedList>
+    <GroupedList style={styles.banner}>
       <Pressable
         onPress={onPress}
-        accessibilityRole="button"
-        accessibilityLabel="Ver planos da Tag Move Mais"
+        accessibilityRole="link"
+        accessibilityLabel="Ver planos da Tag Move Mais em movemais.com"
+        accessibilityHint="Abre o site da Move Mais"
         style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
       >
         <View style={styles.copy}>
@@ -28,6 +35,9 @@ export function PromoBanner({ onPress }: PromoBannerProps) {
 }
 
 const styles = StyleSheet.create({
+  banner: {
+    backgroundColor: colors.promoBannerSurface,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
