@@ -1,5 +1,12 @@
 import type { ComponentType } from 'react';
 import type { LucideProps } from 'lucide-react-native';
+import type { SvgProps } from 'react-native-svg';
+import {
+  BellIcon,
+  ClockIcon,
+  HomeIcon,
+  UserIcon,
+} from 'react-native-heroicons/outline';
 import {
   AlertCircle,
   AlertTriangle,
@@ -17,8 +24,6 @@ import {
   Copy,
   CreditCard,
   Download,
-  History,
-  Home,
   Info,
   LogOut,
   MapPin,
@@ -80,12 +85,18 @@ export const paymentMethodIcons = {
 
 export type PaymentMethodIconName = keyof typeof paymentMethodIcons;
 
+export type TabIconComponent = ComponentType<SvgProps & { size?: number | string }>;
+
+/** Heroicons outline — traço fino padrão 1.5pt, ativo 2pt. */
+export const tabIconStroke = 1.5 as const;
+export const tabIconStrokeActive = 2 as const;
+
 export const tabIcons = {
-  home: Home,
-  history: History,
-  alerts: Bell,
-  profile: User,
-} as const;
+  home: HomeIcon,
+  history: ClockIcon,
+  alerts: BellIcon,
+  profile: UserIcon,
+} as const satisfies Record<string, TabIconComponent>;
 
 type AppIconProps = LucideProps & {
   icon: IconComponent;
@@ -118,8 +129,6 @@ export {
   Copy,
   CreditCard,
   Download,
-  History,
-  Home,
   Info,
   LogOut,
   MapPin,

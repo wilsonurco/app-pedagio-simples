@@ -21,15 +21,17 @@ export function PassagesPaymentFooter({
 }: PassagesPaymentFooterProps) {
   if (totalPassages === 0) return null;
 
+  const selectionLabel =
+    selectedCount === totalPassages
+      ? `${selectedCount} selecionadas`
+      : `${selectedCount} de ${totalPassages} selecionadas`;
+
   return (
     <View style={styles.footer}>
-      <View style={styles.totalRow}>
-        <View style={styles.totalBlock}>
-          <Text style={styles.totalLabel}>Total a pagar</Text>
-          <Text style={styles.totalAmount}>{formatBRL(hasSelection ? total : 0)}</Text>
-        </View>
-        <Text style={styles.totalHint}>
-          {selectedCount} de {totalPassages} selecionadas
+      <View style={styles.summaryRow}>
+        <Text style={styles.totalAmount}>{formatBRL(hasSelection ? total : 0)}</Text>
+        <Text style={styles.summaryMeta} numberOfLines={2}>
+          Total a pagar · {selectionLabel}
         </Text>
       </View>
 
@@ -54,43 +56,37 @@ const styles = StyleSheet.create({
   footer: {
     backgroundColor: colors.secondaryBackground,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.md,
     paddingBottom: spacing.sm,
-    gap: spacing.md,
+    gap: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.separator,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0 -1px 0 rgba(0, 0, 0, 0.04)' }
       : null),
   },
-  totalRow: {
+  summaryRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,
-  },
-  totalBlock: {
-    gap: 2,
-  },
-  totalLabel: {
-    ...fonts.regular,
-    fontSize: fontSize.footnote,
-    color: colors.secondaryLabel,
+    minHeight: 28,
   },
   totalAmount: {
     ...fonts.bold,
-    fontSize: fontSize.title2,
+    fontSize: fontSize.title3,
     color: colors.label,
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
     fontVariant: ['tabular-nums'],
+    flexShrink: 0,
   },
-  totalHint: {
+  summaryMeta: {
+    flex: 1,
     ...fonts.regular,
     fontSize: fontSize.caption,
     color: colors.tertiaryLabel,
-    flexShrink: 1,
     textAlign: 'right',
-    paddingBottom: 2,
+    lineHeight: 16,
   },
   payButton: {
     alignItems: 'center',

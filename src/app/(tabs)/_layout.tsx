@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { iconSize, iconStroke, iconStrokeActive, tabIcons } from '@/components/ui/icons';
+import { iconSize, tabIconStroke, tabIconStrokeActive, tabIcons } from '@/components/ui/icons';
 import { colors, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -21,7 +21,7 @@ function TabIcon({
     <Icon
       size={iconSize.md}
       color={color}
-      strokeWidth={focused ? iconStrokeActive : iconStroke}
+      strokeWidth={focused ? tabIconStrokeActive : tabIconStroke}
     />
   );
 }
