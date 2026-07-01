@@ -9,7 +9,6 @@ import { type PlateFilter } from '@/components/dashboard/VehiclePlateFilter';
 import { PassagesPaymentFooter } from '@/components/dashboard/PassagesPaymentFooter';
 import { PassagesToPayPanel } from '@/components/dashboard/PassagesToPayPanel';
 import { PromoBanner } from '@/components/dashboard/PromoBanner';
-import { RecentActivitySection } from '@/components/dashboard/RecentActivitySection';
 import { isFiscalTechEnabled } from '@/config/dataSource';
 import { usePassages } from '@/context/PassagesContext';
 import { useVehicles } from '@/context/VehiclesContext';
@@ -147,8 +146,6 @@ export default function HomeScreen() {
             onTogglePassage={togglePassage}
             onToggleAllVisible={() => toggleAllVisible(filteredPassages)}
           />
-
-          <RecentActivitySection />
 
           <PromoBanner />
         </View>
