@@ -18,7 +18,7 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="theme-color" content="#F2F2F7" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Pedágio Simples" />
         <meta name="application-name" content="Pedágio Simples" />
         <link rel="manifest" href="/manifest.json" />

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ImageSourcePropType, StyleSheet, useWindowDimensions } from 'react-native';
+import { ImageSourcePropType, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
   Easing,
@@ -16,7 +16,6 @@ type OnboardingSlideHeroProps = {
 };
 
 export function OnboardingSlideHero({ image, isActive }: OnboardingSlideHeroProps) {
-  const { width, height } = useWindowDimensions();
   const scale = useSharedValue(1);
 
   useEffect(() => {
@@ -40,7 +39,7 @@ export function OnboardingSlideHero({ image, isActive }: OnboardingSlideHeroProp
   }));
 
   return (
-    <Animated.View style={[styles.container, { width, height }, imageStyle]}>
+    <Animated.View style={[styles.container, imageStyle]}>
       <Image source={image} style={styles.image} contentFit="cover" transition={300} />
     </Animated.View>
   );

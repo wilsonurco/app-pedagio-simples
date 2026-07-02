@@ -33,6 +33,9 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
   const listRef = useRef<FlatList<OnboardingSlide>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Estende o slide sob a status bar (PWA iOS com viewport-fit=cover).
+  const slideHeight = height + insets.top;
+
   const isLast = activeIndex === ONBOARDING_SLIDES.length - 1;
   const footerHeight = insets.bottom + spacing.lg + 120;
 
@@ -56,7 +59,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
 
   const renderSlide = useCallback(
     ({ item, index }: { item: OnboardingSlide; index: number }) => (
-      <View style={[styles.slide, { width, height }]}>
+      <View style={[styles.slide, { width, height: slideHeight, marginTop: -insets.top }]}>
         <OnboardingSlideHero image={item.image} isActive={index === activeIndex} />
         <OnboardingSlideScrim />
 
@@ -88,7 +91,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         )}
       </View>
     ),
-    [activeIndex, footerHeight, height, insets.top, width],
+    [activeIndex, footerHeight, insets.top, slideHeight, width],
   );
 
   return (
@@ -105,7 +108,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         scrollEventThrottle={16}
         bounces={false}
         getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
-        style={styles.list}
+        style={[styles.list, { marginTop: -insets.top, height: slideHeight }]}
       />
 
       <OnboardingHeader
