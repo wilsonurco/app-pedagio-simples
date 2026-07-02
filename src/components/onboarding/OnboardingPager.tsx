@@ -9,19 +9,18 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { ChevronRight } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PayButton } from '@/components/PayButton';
+import { OnboardingHeader } from '@/components/onboarding/OnboardingHeader';
 import { ONBOARDING_SLIDES, type OnboardingSlide } from '@/constants/onboardingSlides';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 import { OnboardingSlideHero } from './OnboardingSlideHero';
-
-const logo = require('@/assets/images/logo-pedagio-simples.png');
+import { OnboardingSlideScrim } from './OnboardingSlideScrim';
 
 type OnboardingPagerProps = {
   onComplete: () => void;
@@ -34,7 +33,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const isLast = activeIndex === ONBOARDING_SLIDES.length - 1;
-  const heroHeight = Math.min(width * 0.92, height * 0.38, 360);
+  const footerHeight = insets.bottom + spacing.lg + 120;
 
   const goNext = useCallback(() => {
     if (isLast) {
@@ -56,11 +55,15 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
 
   const renderSlide = useCallback(
     ({ item, index }: { item: OnboardingSlide; index: number }) => (
-      <View style={[styles.slide, { width }]}>
-        <OnboardingSlideHero image={item.image} isActive={index === activeIndex} height={heroHeight} />
+      <View style={[styles.slide, { width, height }]}>
+        <OnboardingSlideHero image={item.image} isActive={index === activeIndex} />
+        <OnboardingSlideScrim />
 
         {index === activeIndex && (
-          <Animated.View entering={FadeInDown.duration(380).delay(60)} style={styles.textBlock}>
+          <Animated.View
+            entering={FadeInDown.duration(420).delay(80)}
+            style={[styles.textPanel, { paddingBottom: footerHeight }]}
+          >
             <View style={styles.stepBadge}>
               <Text style={styles.stepBadgeText}>{item.eyebrow}</Text>
             </View>
@@ -73,23 +76,11 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         )}
       </View>
     ),
-    [activeIndex, heroHeight, width],
+    [activeIndex, footerHeight, height, width],
   );
 
   return (
     <View style={styles.root}>
-      <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
-        <Image source={logo} style={styles.logo} contentFit="contain" accessibilityLabel="Pedágio Simples" />
-        <Pressable
-          onPress={onComplete}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Pular introdução"
-        >
-          <Text style={styles.skip}>Pular</Text>
-        </Pressable>
-      </View>
-
       <FlatList
         ref={listRef}
         data={ONBOARDING_SLIDES}
@@ -103,7 +94,11 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         bounces={false}
         getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
         style={styles.list}
-        contentContainerStyle={styles.listContent}
+      />
+
+      <OnboardingHeader
+        onSkip={onComplete}
+        style={[styles.header, { paddingTop: insets.top + spacing.sm }]}
       />
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.lg }]}>
@@ -127,7 +122,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
             accessibilityLabel="Próximo"
           >
             <Text style={styles.nextLabel}>Próximo</Text>
-            <ChevronRight size={20} color={colors.tint} strokeWidth={2.5} />
+            <ChevronRight size={20} color={colors.onTint} strokeWidth={2.5} />
           </Pressable>
         )}
       </View>
@@ -138,43 +133,34 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.groupedBackground,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.md,
-  },
-  logo: {
-    width: 168,
-    height: 42,
-  },
-  skip: {
-    ...fonts.medium,
-    fontSize: fontSize.subheadline,
-    color: colors.tint,
+    backgroundColor: colors.label,
   },
   list: {
     flex: 1,
   },
-  listContent: {
-    alignItems: 'stretch',
-  },
   slide: {
-    flex: 1,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.sm,
-    gap: spacing.xl,
+    overflow: 'hidden',
   },
-  textBlock: {
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  textPanel: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 5,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
     gap: spacing.md,
-    paddingBottom: spacing.md,
   },
   stepBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: colors.badgePurpleBg,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
@@ -182,30 +168,35 @@ const styles = StyleSheet.create({
   stepBadgeText: {
     ...fonts.semibold,
     fontSize: fontSize.caption,
-    color: colors.tint,
+    color: 'rgba(255, 255, 255, 0.88)',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
   title: {
     ...fonts.bold,
-    fontSize: fontSize.title2,
-    color: colors.label,
-    letterSpacing: -0.4,
-    lineHeight: 28,
+    fontSize: fontSize.title1,
+    color: colors.onTint,
+    letterSpacing: -0.5,
+    lineHeight: 34,
   },
   highlight: {
-    color: colors.tint,
+    color: colors.promoAccent,
   },
   description: {
     ...fonts.regular,
     fontSize: fontSize.body,
-    color: colors.secondaryLabel,
+    color: 'rgba(255, 255, 255, 0.82)',
     lineHeight: 24,
   },
   footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
     paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
-    gap: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.md,
   },
   dots: {
     flexDirection: 'row',
@@ -217,11 +208,11 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.barInactive,
+    backgroundColor: 'rgba(255, 255, 255, 0.32)',
   },
   dotActive: {
     width: 24,
-    backgroundColor: colors.tint,
+    backgroundColor: colors.onTint,
   },
   nextButton: {
     flexDirection: 'row',
@@ -229,13 +220,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.xs,
     minHeight: 52,
+    backgroundColor: colors.tint,
+    borderRadius: radius.pill,
   },
   nextButtonPressed: {
-    opacity: 0.7,
+    opacity: 0.75,
   },
   nextLabel: {
     ...fonts.semibold,
     fontSize: fontSize.body,
-    color: colors.tint,
+    color: colors.onTint,
   },
 });

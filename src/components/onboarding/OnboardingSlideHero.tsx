@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ImageSourcePropType, StyleSheet, View } from 'react-native';
+import { ImageSourcePropType, StyleSheet, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
   Easing,
@@ -10,15 +10,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { colors, radius, shadow, spacing } from '@/theme/tokens';
-
 type OnboardingSlideHeroProps = {
   image: ImageSourcePropType;
   isActive: boolean;
-  height: number;
 };
 
-export function OnboardingSlideHero({ image, isActive, height }: OnboardingSlideHeroProps) {
+export function OnboardingSlideHero({ image, isActive }: OnboardingSlideHeroProps) {
+  const { width, height } = useWindowDimensions();
   const scale = useSharedValue(1);
 
   useEffect(() => {
@@ -29,8 +27,8 @@ export function OnboardingSlideHero({ image, isActive, height }: OnboardingSlide
 
     scale.value = withRepeat(
       withSequence(
-        withTiming(1.04, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.06, { duration: 12000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 12000, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
       false,
@@ -42,24 +40,15 @@ export function OnboardingSlideHero({ image, isActive, height }: OnboardingSlide
   }));
 
   return (
-    <View style={[styles.frame, { height }]}>
-      <Animated.View style={[styles.imageWrap, imageStyle]}>
-        <Image source={image} style={styles.image} contentFit="cover" transition={300} />
-      </Animated.View>
-    </View>
+    <Animated.View style={[styles.container, { width, height }, imageStyle]}>
+      <Image source={image} style={styles.image} contentFit="cover" transition={300} />
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  frame: {
-    width: '100%',
-    borderRadius: radius.xl,
-    overflow: 'hidden',
-    backgroundColor: colors.secondaryBackground,
-    ...shadow.card,
-  },
-  imageWrap: {
-    flex: 1,
+  container: {
+    ...StyleSheet.absoluteFill,
   },
   image: {
     width: '100%',
