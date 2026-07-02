@@ -59,11 +59,31 @@ export function methodNotAllowed(req: VercelRequest, res: VercelResponse, allowe
   });
 }
 
+const INTERNAL_ERROR_PATTERNS = [
+  /AUTH_SECRET/i,
+  /FISCALTECH_/i,
+  /process\.env/i,
+  /API_KEY/i,
+  /TOKEN_ID/i,
+];
+
+function isSensitiveInternalMessage(message: string): boolean {
+  return INTERNAL_ERROR_PATTERNS.some((pattern) => pattern.test(message));
+}
+
+export function publicErrorMessage(error: unknown, fallback = 'Não foi possível concluir a operação. Tente novamente.'): string {
+  const message = error instanceof Error ? error.message : fallback;
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
+    return isSensitiveInternalMessage(message) ? fallback : message;
+  }
+  return message;
+}
+
 export function internalError(req: VercelRequest, res: VercelResponse, error: unknown) {
-  const message = error instanceof Error ? error.message : 'Erro interno do servidor';
-  console.error('[bff]', message);
+  const rawMessage = error instanceof Error ? error.message : 'Erro interno do servidor';
+  console.error('[bff]', rawMessage, error);
   sendJson(req, res, 500, {
     erro: 'ERRO_INTERNO',
-    mensagem: message,
+    mensagem: publicErrorMessage(error),
   });
 }

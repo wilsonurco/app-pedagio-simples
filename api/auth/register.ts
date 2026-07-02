@@ -5,6 +5,7 @@ import { hashPassword } from '../_lib/auth/password';
 import { createSessionToken } from '../_lib/auth/session';
 import { createUser, toPublicUser } from '../_lib/auth/users';
 import { validateRegisterPayload } from '../_lib/auth/validation';
+import { AuthConfigError } from '../_lib/auth/env';
 import { handleOptions, internalError, methodNotAllowed, sendJson } from '../_lib/http';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -17,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const validation = validateRegisterPayload(req.body);
-    if (!validation.ok) {
+    if (validation.ok === false) {
       sendJson(req, res, 422, { erro: 'DADOS_INVALIDOS', mensagem: validation.message });
       return;
     }
@@ -37,6 +38,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       vehicle: vehicle ?? null,
     });
   } catch (error) {
+    if (error instanceof AuthConfigError) {
+      internalError(req, res, error);
+      return;
+    }
+
     const message = error instanceof Error ? error.message : 'Erro ao cadastrar.';
     if (message.includes('já cadastrado')) {
       sendJson(req, res, 409, { erro: 'CONFLITO', mensagem: message });

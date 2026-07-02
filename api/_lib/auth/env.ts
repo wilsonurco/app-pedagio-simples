@@ -1,12 +1,19 @@
+export class AuthConfigError extends Error {
+  constructor() {
+    super('AUTH_SECRET ausente ou muito curto (mínimo 32 caracteres).');
+    this.name = 'AuthConfigError';
+  }
+}
+
 export function getAuthSecret(): string {
   const secret = process.env.AUTH_SECRET;
   if (secret && secret.length >= 32) return secret;
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' && process.env.VERCEL_ENV !== 'production') {
     return 'dev-only-auth-secret-min-32-chars!!';
   }
 
-  throw new Error('AUTH_SECRET ausente ou muito curto (mínimo 32 caracteres).');
+  throw new AuthConfigError();
 }
 
 export const SESSION_COOKIE_NAME = 'ps_session';

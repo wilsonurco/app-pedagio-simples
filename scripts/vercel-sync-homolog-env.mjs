@@ -12,6 +12,7 @@ const ENV_FILE = resolve(process.cwd(), '.env.local');
 const ENVIRONMENTS = ['production', 'development'];
 
 const REQUIRED_KEYS = [
+  'AUTH_SECRET',
   'FISCALTECH_BASE_URL',
   'FISCALTECH_PORTAL_ID',
   'FISCALTECH_API_KEY',
@@ -84,6 +85,11 @@ function main() {
 
   if (missing.length > 0) {
     console.error(`Variáveis ausentes em .env.local: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+
+  if (!values.AUTH_SECRET || values.AUTH_SECRET.length < 32) {
+    console.error('AUTH_SECRET deve ter no mínimo 32 caracteres em .env.local.');
     process.exit(1);
   }
 
