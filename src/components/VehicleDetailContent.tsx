@@ -1,15 +1,13 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
+import { VehicleAvatar } from '@/components/VehicleAvatar';
 import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
-import { Car, iconSize, iconStroke } from '@/components/ui/icons';
 import { userProfile, type Vehicle } from '@/data/mock';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
-import { getVehicleImageSource } from '@/utils/vehicleImages';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type VehicleDetailContentProps = {
@@ -28,7 +26,6 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 export function VehicleDetailContent({ vehicle }: VehicleDetailContentProps) {
   const insets = useSafeAreaInsets();
   const topPadding = useAppTopPadding(spacing.sm);
-  const imageSource = getVehicleImageSource(vehicle.model);
 
   const rows = [
     { label: 'Modelo', value: vehicle.model },
@@ -51,18 +48,10 @@ export function VehicleDetailContent({ vehicle }: VehicleDetailContentProps) {
 
       <GroupedList>
         <View style={styles.hero}>
-          {imageSource ? (
-            <Image
-              source={imageSource}
-              style={styles.image}
-              contentFit="contain"
-              accessibilityLabel={`Foto do ${vehicle.model}`}
-            />
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Car size={iconSize.lg} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-            </View>
-          )}
+          <VehicleAvatar
+            size="lg"
+            accessibilityLabel={`Avatar do veículo ${vehicle.model}`}
+          />
         </View>
         {rows.map((row, index) => (
           <View key={row.label}>
@@ -88,21 +77,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
-  },
-  image: {
-    width: '100%',
-    maxWidth: 320,
-    height: 140,
-    borderRadius: radius.md,
-  },
-  imagePlaceholder: {
-    width: '100%',
-    maxWidth: 320,
-    height: 140,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.groupedBackground,
   },
   detailRow: {
     paddingHorizontal: spacing.lg,

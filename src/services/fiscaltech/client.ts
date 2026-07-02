@@ -18,6 +18,8 @@ type RequestOptions = {
   path: string;
   body?: unknown;
   idempotencyKey?: string;
+  /** Só rotas autenticadas (reservas) — consulta de débitos permanece pública. */
+  withCredentials?: boolean;
 };
 
 async function bffRequest<T>(options: RequestOptions): Promise<T> {
@@ -35,6 +37,7 @@ async function bffRequest<T>(options: RequestOptions): Promise<T> {
   const response = await fetch(url, {
     method: options.method,
     headers,
+    ...(options.withCredentials ? { credentials: 'include' as const } : {}),
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
 
@@ -71,6 +74,7 @@ export function criarReserva(payload: CriarReservaRequest, idempotencyKey?: stri
     path: '/api/reservas',
     body: payload,
     idempotencyKey,
+    withCredentials: true,
   });
 }
 
@@ -84,6 +88,7 @@ export function confirmarReserva(
     path: `/api/reservas/${encodeURIComponent(reservaId)}/confirmar`,
     body: payload,
     idempotencyKey,
+    withCredentials: true,
   });
 }
 
@@ -93,6 +98,7 @@ export function cancelarReserva(reservaId: string, idempotencyKey?: string) {
     path: `/api/reservas/${encodeURIComponent(reservaId)}/cancelar`,
     body: {},
     idempotencyKey,
+    withCredentials: true,
   });
 }
 
@@ -100,5 +106,6 @@ export function consultarReserva(reservaId: string) {
   return bffRequest<ReservaStatusResponse>({
     method: 'GET',
     path: `/api/reservas/${encodeURIComponent(reservaId)}`,
+    withCredentials: true,
   });
 }

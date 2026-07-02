@@ -10,6 +10,7 @@ import {
 import { isFiscalTechEnabled } from '@/config/dataSource';
 import { formatNowForPassage } from '@/utils/dateTime';
 import { generateReceiptId } from '@/utils/receiptHtml';
+import { generateRpvId } from '@/utils/rpvHtml';
 import { consultarDebitos } from '@/services/fiscaltech/client';
 import { mapDebitosToPassages } from '@/services/fiscaltech/mappers';
 
@@ -101,6 +102,7 @@ export function PassagesProvider({ children }: { children: ReactNode }) {
                 paidAt: now,
                 paymentMethod,
                 receiptId: generateReceiptId(passage.passageId),
+                rpvId: generateRpvId(passage.passageId),
                 fiscalProtocol,
                 disponivel: true,
               }

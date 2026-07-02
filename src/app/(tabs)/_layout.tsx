@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AuthGuard } from '@/components/AuthGuard';
 import { iconSize, tabIconStroke, tabIconStrokeActive, tabIcons } from '@/components/ui/icons';
 import { colors, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -31,7 +32,8 @@ export default function TabsLayout() {
   const webTabBarInset = Platform.OS === 'web' ? Math.max(insets.bottom, spacing.sm) : 0;
 
   return (
-    <Tabs
+    <AuthGuard>
+      <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.tint,
@@ -87,5 +89,6 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    </AuthGuard>
   );
 }

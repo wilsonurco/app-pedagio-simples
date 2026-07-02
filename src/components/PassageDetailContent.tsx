@@ -3,10 +3,11 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PayButton } from '@/components/PayButton';
-import { ReceiptActions } from '@/components/ReceiptActions';
+import { RpvActions } from '@/components/RpvActions';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { GroupedDivider, GroupedList, GroupedSection } from '@/components/ui/GroupedList';
 import { generateReceiptId } from '@/utils/receiptHtml';
+import { generateRpvId } from '@/utils/rpvHtml';
 import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
 import { formatDateDisplay, formatDateTimeDisplay } from '@/utils/dateTime';
 import { formatPassageIdNumeric } from '@/utils/passageId';
@@ -54,6 +55,12 @@ export function PassageDetailContent({ passage }: PassageDetailContentProps) {
     ...(passage.paymentMethod ? [{ label: 'Forma de pagamento', value: passage.paymentMethod }] : []),
     ...(passage.receiptId || !isPending
       ? [{ label: 'Nº do comprovante', value: passage.receiptId ?? generateReceiptId(passage.passageId) }]
+      : []),
+    ...(passage.rpvId || !isPending
+      ? [{ label: 'Nº do RPV', value: passage.rpvId ?? generateRpvId(passage.passageId) }]
+      : []),
+    ...(passage.fiscalProtocol
+      ? [{ label: 'Protocolo de confirmação', value: passage.fiscalProtocol }]
       : []),
   ];
 
@@ -111,7 +118,7 @@ export function PassageDetailContent({ passage }: PassageDetailContentProps) {
           }
         />
       ) : (
-        <ReceiptActions passage={passage} />
+        <RpvActions passage={passage} />
       )}
     </ScrollView>
   );

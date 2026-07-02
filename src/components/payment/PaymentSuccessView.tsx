@@ -1,11 +1,14 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PayButton } from '@/components/PayButton';
+import { RpvActions } from '@/components/RpvActions';
 import { Check, iconSize, iconStrokeActive } from '@/components/ui/icons';
-import { formatBRL } from '@/data/mock';
+import { usePassages } from '@/context/PassagesContext';
+import { formatBRL, type Passage } from '@/data/mock';
 import { navigateHome } from '@/utils/navigation';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type PaymentSuccessViewProps = {
@@ -13,6 +16,7 @@ type PaymentSuccessViewProps = {
   total: number;
   paymentMethod: string;
   protocol?: string;
+  paidPassageIds?: string[];
 };
 
 export function PaymentSuccessView({
@@ -20,20 +24,56 @@ export function PaymentSuccessView({
   total,
   paymentMethod,
   protocol,
+  paidPassageIds = [],
 }: PaymentSuccessViewProps) {
   const insets = useSafeAreaInsets();
+  const { passages, getPassage } = usePassages();
+
+  const paidPassages = useMemo(() => {
+    return paidPassageIds
+      .map((id) => getPassage(id))
+      .filter((passage): passage is Passage => passage !== undefined && passage.status === 'paid');
+  }, [paidPassageIds, passages, getPassage]);
+
+  const showRpvList = paidPassages.length > 0 && paidPassages.length <= 3;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.icon}>
-        <Check size={iconSize.xl} color={colors.onPrimary} strokeWidth={iconStrokeActive} />
-      </View>
-      <Text style={styles.title}>Pagamento confirmado</Text>
-      <Text style={styles.subtitle}>
-        {passageCount} {passageCount === 1 ? 'passagem paga' : 'passagens pagas'} • {formatBRL(total)}
-      </Text>
-      <Text style={styles.method}>via {paymentMethod}</Text>
-      {protocol ? <Text style={styles.protocol}>Protocolo: {protocol}</Text> : null}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.hero}>
+          <View style={styles.icon}>
+            <Check size={iconSize.xl} color={colors.onPrimary} strokeWidth={iconStrokeActive} />
+          </View>
+          <Text style={styles.title}>Pagamento confirmado</Text>
+          <Text style={styles.subtitle}>
+            {passageCount} {passageCount === 1 ? 'passagem paga' : 'passagens pagas'} •{' '}
+            {formatBRL(total)}
+          </Text>
+          <Text style={styles.method}>via {paymentMethod}</Text>
+          {protocol ? <Text style={styles.protocol}>Protocolo: {protocol}</Text> : null}
+        </View>
+
+        {showRpvList ? (
+          <View style={styles.rpvSection}>
+            <Text style={styles.rpvSectionTitle}>Registro de Passagem Veicular</Text>
+            <Text style={styles.rpvSectionHint}>
+              {paidPassages.length === 1
+                ? 'Baixe ou compartilhe o RPV da passagem quitada.'
+                : 'Baixe ou compartilhe o RPV de cada passagem.'}
+            </Text>
+            {paidPassages.map((passage) => (
+              <RpvActions key={passage.id} passage={passage} compact={paidPassages.length > 1} />
+            ))}
+          </View>
+        ) : paidPassageIds.length > 3 ? (
+          <Text style={styles.rpvHint}>
+            Os RPVs estão disponíveis no histórico de cada passagem paga.
+          </Text>
+        ) : null}
+      </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
         <PayButton label="Concluir" onPress={navigateHome} />
@@ -46,9 +86,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.groupedBackground,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.xl,
+    gap: spacing.lg,
+  },
+  hero: {
+    alignItems: 'center',
   },
   icon: {
     width: 88,
@@ -85,11 +133,31 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     textAlign: 'center',
   },
+  rpvSection: {
+    width: '100%',
+    gap: spacing.md,
+  },
+  rpvSectionTitle: {
+    ...fonts.semibold,
+    fontSize: fontSize.subheadline,
+    color: colors.label,
+    textAlign: 'center',
+  },
+  rpvSectionHint: {
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.secondaryLabel,
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  rpvHint: {
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.secondaryLabel,
+    textAlign: 'center',
+    paddingHorizontal: spacing.md,
+  },
   footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     backgroundColor: colors.secondaryBackground,

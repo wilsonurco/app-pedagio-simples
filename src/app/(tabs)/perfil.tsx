@@ -1,23 +1,29 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
 
 import { ProfileMenuList } from '@/components/ProfileMenuList';
 import { ScreenTitle } from '@/components/ScreenTitle';
+import { VehicleAvatar } from '@/components/VehicleAvatar';
 import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
 import { iconSize, iconStroke, LogOut } from '@/components/ui/icons';
+import { useAuth } from '@/context/AuthContext';
 import { useVehicles } from '@/context/VehiclesContext';
-import { userProfile } from '@/data/mock';
+import { router, type Href } from 'expo-router';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
-const vehicleImage = require('@/assets/images/honda-civic-profile.png');
-
 export default function ProfileScreen() {
   const topPadding = useAppTopPadding(spacing.sm);
-  const { name, email } = userProfile;
+  const { user, logout } = useAuth();
   const { primaryVehicle } = useVehicles();
+  const name = user?.name ?? 'Usuário';
+  const email = user?.email ?? user?.phone ?? '';
   const initial = name.charAt(0).toUpperCase();
+
+  async function handleLogout() {
+    await logout();
+    router.replace('/splash' as Href);
+  }
 
   return (
     <ScrollView
@@ -45,11 +51,9 @@ export default function ProfileScreen() {
           <>
             <GroupedDivider />
             <View style={styles.vehicleRow}>
-              <Image
-                source={vehicleImage}
-                style={styles.vehicleImage}
-                contentFit="contain"
-                accessibilityLabel={`Foto do ${primaryVehicle.model}`}
+              <VehicleAvatar
+                size="md"
+                accessibilityLabel={`Avatar do veículo ${primaryVehicle.model}`}
               />
               <View style={styles.userInfo}>
                 <Text style={styles.userName}>{primaryVehicle.model}</Text>
@@ -65,6 +69,7 @@ export default function ProfileScreen() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Sair da conta"
+        onPress={handleLogout}
         style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
       >
         <LogOut size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
@@ -122,10 +127,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-  },
-  vehicleImage: {
-    width: 72,
-    height: 40,
   },
   logout: {
     flexDirection: 'row',

@@ -127,6 +127,7 @@ export default function PixPaymentScreen() {
         total={paymentResult.total}
         paymentMethod="Pix"
         protocol={paymentResult.protocol}
+        paidPassageIds={fiscaltechEnabled ? payableIds : pendingSelectedIds}
       />
     );
   }

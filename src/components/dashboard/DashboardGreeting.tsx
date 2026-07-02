@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { formatBRL, userProfile } from '@/data/mock';
+import { formatBRL } from '@/data/mock';
 import {
   formatCompactDueHint,
   formatCompactVehicleHint,
@@ -12,6 +12,7 @@ import { fonts } from '@/theme/typography';
 
 type DashboardGreetingProps = {
   summary: DashboardSummary;
+  userName: string;
 };
 
 function firstName(fullName: string) {
@@ -25,7 +26,7 @@ function pendingHeadline(pendingCount: number, pendingTotal: number) {
   return `${countLabel} · ${formatBRL(pendingTotal)}`;
 }
 
-export function DashboardGreeting({ summary }: DashboardGreetingProps) {
+export function DashboardGreeting({ summary, userName }: DashboardGreetingProps) {
   const { pendingCount, pendingTotal, vehicleCount, platesWithDebt, dueDateSummary } = summary;
 
   const metaParts = [
@@ -35,7 +36,7 @@ export function DashboardGreeting({ summary }: DashboardGreetingProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.greeting}>Olá, {firstName(userProfile.name)}</Text>
+      <Text style={styles.greeting}>Olá, {firstName(userName)}</Text>
       <Text style={styles.headline}>{pendingHeadline(pendingCount, pendingTotal)}</Text>
 
       {metaParts.length > 0 ? (

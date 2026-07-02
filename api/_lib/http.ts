@@ -1,20 +1,27 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
+const BASE_CORS_HEADERS = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers':
     'Content-Type, Authorization, X-Idempotency-Key, X-Request-Id',
 };
 
-export function applyCors(res: VercelResponse) {
-  Object.entries(CORS_HEADERS).forEach(([key, value]) => {
+export function applyCors(req: VercelRequest, res: VercelResponse) {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+
+  Object.entries(BASE_CORS_HEADERS).forEach(([key, value]) => {
     res.setHeader(key, value);
   });
 }
 
 export function handleOptions(req: VercelRequest, res: VercelResponse): boolean {
-  applyCors(res);
+  applyCors(req, res);
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return true;
@@ -30,12 +37,13 @@ export function getIdempotencyKey(req: VercelRequest): string | undefined {
 }
 
 export function sendJson(
+  req: VercelRequest,
   res: VercelResponse,
   status: number,
   body: unknown,
   extraHeaders?: Record<string, string>,
 ) {
-  applyCors(res);
+  applyCors(req, res);
   if (extraHeaders) {
     Object.entries(extraHeaders).forEach(([key, value]) => {
       res.setHeader(key, value);
@@ -44,17 +52,17 @@ export function sendJson(
   res.status(status).json(body);
 }
 
-export function methodNotAllowed(res: VercelResponse, allowed: string[]) {
-  sendJson(res, 405, {
+export function methodNotAllowed(req: VercelRequest, res: VercelResponse, allowed: string[]) {
+  sendJson(req, res, 405, {
     erro: 'METODO_NAO_PERMITIDO',
     mensagem: `Use ${allowed.join(' ou ')}.`,
   });
 }
 
-export function internalError(res: VercelResponse, error: unknown) {
+export function internalError(req: VercelRequest, res: VercelResponse, error: unknown) {
   const message = error instanceof Error ? error.message : 'Erro interno do servidor';
   console.error('[bff]', message);
-  sendJson(res, 500, {
+  sendJson(req, res, 500, {
     erro: 'ERRO_INTERNO',
     mensagem: message,
   });

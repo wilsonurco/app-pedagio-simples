@@ -7,7 +7,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handleOptions(req, res)) return;
 
   if (req.method !== 'POST') {
-    methodNotAllowed(res, ['POST']);
+    methodNotAllowed(req, res, ['POST']);
     return;
   }
 
@@ -19,8 +19,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       requestId: getIdempotencyKey(req),
     });
 
-    sendJson(res, result.status, result.data, { 'X-Request-Id': result.requestId });
+    sendJson(req, res, result.status, result.data, { 'X-Request-Id': result.requestId });
   } catch (error) {
-    internalError(res, error);
+    internalError(req, res, error);
   }
 }

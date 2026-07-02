@@ -7,6 +7,7 @@ type PayButtonProps = {
   label?: string;
   loading?: boolean;
   disabled?: boolean;
+  variant?: 'primary' | 'secondary';
   onPress?: () => void;
 };
 
@@ -14,9 +15,11 @@ export function PayButton({
   label = 'Pagar agora',
   loading = false,
   disabled = false,
+  variant = 'primary',
   onPress,
 }: PayButtonProps) {
   const isDisabled = loading || disabled;
+  const isSecondary = variant === 'secondary';
 
   return (
     <Pressable
@@ -27,14 +30,15 @@ export function PayButton({
       accessibilityState={{ disabled: loading, busy: loading }}
       style={({ pressed }) => [
         styles.button,
-        pressed && !isDisabled && styles.buttonPressed,
+        isSecondary && styles.buttonSecondary,
+        pressed && !isDisabled && (isSecondary ? styles.buttonSecondaryPressed : styles.buttonPressed),
         isDisabled && styles.buttonDisabled,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={colors.onTint} />
+        <ActivityIndicator color={isSecondary ? colors.tint : colors.onTint} />
       ) : (
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, isSecondary && styles.labelSecondary]}>{label}</Text>
       )}
     </Pressable>
   );
@@ -52,6 +56,14 @@ const styles = StyleSheet.create({
   buttonPressed: {
     backgroundColor: colors.tintPressed,
   },
+  buttonSecondary: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: colors.tint,
+  },
+  buttonSecondaryPressed: {
+    opacity: 0.7,
+  },
   buttonDisabled: {
     opacity: 0.38,
   },
@@ -59,5 +71,8 @@ const styles = StyleSheet.create({
     ...fonts.semibold,
     fontSize: fontSize.body,
     color: colors.onTint,
+  },
+  labelSecondary: {
+    color: colors.tint,
   },
 });

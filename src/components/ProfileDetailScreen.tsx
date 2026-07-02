@@ -1,25 +1,24 @@
 import { router, type Href } from 'expo-router';
-import { Image } from 'expo-image';
 import {
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
-  type ImageSourcePropType,
 } from 'react-native';
 
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
+import { VehicleAvatar } from '@/components/VehicleAvatar';
 import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
-import { Car, ChevronRight, iconSize, iconStroke, Trash2 } from '@/components/ui/icons';
+import { ChevronRight, iconSize, iconStroke, Trash2 } from '@/components/ui/icons';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 export type DetailListItem = {
   label: string;
-  imageSource?: ImageSourcePropType | null;
+  showVehicleAvatar?: boolean;
   route?: Href;
   onDelete?: () => void;
 };
@@ -30,25 +29,6 @@ type DetailScreenProps = {
   icon?: string;
   items?: (string | DetailListItem)[];
 };
-
-function VehicleThumbnail({ imageSource, label }: { imageSource?: ImageSourcePropType | null; label: string }) {
-  return (
-    <View style={styles.thumbnail}>
-      {imageSource ? (
-        <Image
-          source={imageSource}
-          style={styles.thumbnailImage}
-          contentFit="contain"
-          accessibilityLabel={`Foto do veículo ${label}`}
-        />
-      ) : (
-        <View style={styles.thumbnailPlaceholder}>
-          <Car size={16} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
-        </View>
-      )}
-    </View>
-  );
-}
 
 export function ProfileDetailScreen({ title, description, items = [] }: DetailScreenProps) {
   const topPadding = useAppTopPadding(spacing.sm);
@@ -70,9 +50,9 @@ export function ProfileDetailScreen({ title, description, items = [] }: DetailSc
           const label = typeof item === 'string' ? item : item.label;
           const route = typeof item === 'string' ? undefined : item.route;
           const onDelete = typeof item === 'string' ? undefined : item.onDelete;
-          const imageSource = typeof item === 'string' ? undefined : item.imageSource;
+          const showVehicleAvatar = typeof item === 'string' ? false : item.showVehicleAvatar === true;
           const key = typeof item === 'string' ? item : item.label;
-          const hasThumbnail = imageSource !== undefined;
+          const hasThumbnail = showVehicleAvatar;
 
           const deleteButton = onDelete ? (
             <Pressable
@@ -88,7 +68,9 @@ export function ProfileDetailScreen({ title, description, items = [] }: DetailSc
 
           const rowBody = (
             <>
-              {hasThumbnail ? <VehicleThumbnail imageSource={imageSource} label={label} /> : null}
+              {hasThumbnail ? (
+                <VehicleAvatar size="sm" accessibilityLabel={`Avatar do veículo ${label}`} />
+              ) : null}
               <Text style={styles.rowText}>{label}</Text>
               {route ? (
                 <ChevronRight size={16} color={colors.quaternaryLabel} strokeWidth={iconStroke} />
@@ -99,7 +81,7 @@ export function ProfileDetailScreen({ title, description, items = [] }: DetailSc
           if (route && onDelete) {
             return (
               <View key={key}>
-                {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 56 + spacing.md : spacing.lg} /> : null}
+                {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 40 + spacing.md : spacing.lg} /> : null}
                 <View style={[styles.row, hasThumbnail && styles.rowWithThumbnail]}>
                   <Pressable
                     onPress={() => router.push(route)}
@@ -118,7 +100,7 @@ export function ProfileDetailScreen({ title, description, items = [] }: DetailSc
           if (route) {
             return (
               <View key={key}>
-                {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 56 + spacing.md : spacing.lg} /> : null}
+                {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 40 + spacing.md : spacing.lg} /> : null}
                 <Pressable
                   onPress={() => router.push(route)}
                   accessibilityRole="button"
@@ -137,7 +119,7 @@ export function ProfileDetailScreen({ title, description, items = [] }: DetailSc
 
           return (
             <View key={key}>
-              {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 56 + spacing.md : spacing.lg} /> : null}
+              {index > 0 ? <GroupedDivider inset={hasThumbnail ? spacing.lg + 40 + spacing.md : spacing.lg} /> : null}
               <View style={[styles.row, hasThumbnail && styles.rowWithThumbnail]}>
                 {rowBody}
                 {deleteButton}
@@ -182,23 +164,6 @@ const styles = StyleSheet.create({
     ...fonts.regular,
     fontSize: fontSize.body,
     color: colors.label,
-  },
-  thumbnail: {
-    width: 56,
-    height: 40,
-    borderRadius: radius.sm,
-    overflow: 'hidden',
-    backgroundColor: colors.groupedBackground,
-  },
-  thumbnailImage: {
-    width: '100%',
-    height: '100%',
-  },
-  thumbnailPlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.groupedBackground,
   },
   iconBtn: {
     width: 44,

@@ -33,6 +33,8 @@ export type Passage = {
   status: 'paid' | 'pending';
   paidAt?: string;
   receiptId?: string;
+  /** Registro de Passagem Veicular — emitido após quitação */
+  rpvId?: string;
   paymentMethod?: string;
   lane?: string;
   gantry?: string;
@@ -144,6 +146,7 @@ export const initialPassages: Passage[] = [
     status: 'paid',
     paidAt: '10/06/2026 18:30:15',
     receiptId: 'CPV-2026-007912',
+    rpvId: 'RPV-2026-007912',
     paymentMethod: 'Pix',
   },
   {
@@ -163,6 +166,7 @@ export const initialPassages: Passage[] = [
     status: 'paid',
     paidAt: '09/06/2026 10:15:51',
     receiptId: 'CPV-2026-007801',
+    rpvId: 'RPV-2026-007801',
     paymentMethod: 'Cartão de crédito',
   },
   {
@@ -182,6 +186,7 @@ export const initialPassages: Passage[] = [
     status: 'paid',
     paidAt: '05/06/2026 22:00:44',
     receiptId: 'CPV-2026-007650',
+    rpvId: 'RPV-2026-007650',
     paymentMethod: 'Pix',
   },
   {
@@ -201,6 +206,7 @@ export const initialPassages: Passage[] = [
     status: 'paid',
     paidAt: '22/05/2026 20:10:38',
     receiptId: 'CPV-2026-006210',
+    rpvId: 'RPV-2026-006210',
     paymentMethod: 'Saldo em conta',
   },
   {
@@ -220,6 +226,7 @@ export const initialPassages: Passage[] = [
     status: 'paid',
     paidAt: '15/05/2026 19:00:22',
     receiptId: 'CPV-2026-006118',
+    rpvId: 'RPV-2026-006118',
     paymentMethod: 'Pix',
   },
   {
@@ -239,6 +246,7 @@ export const initialPassages: Passage[] = [
     status: 'paid',
     paidAt: '08/04/2026 21:45:47',
     receiptId: 'CPV-2026-005902',
+    rpvId: 'RPV-2026-005902',
     paymentMethod: 'Cartão de crédito',
   },
   {
@@ -258,6 +266,7 @@ export const initialPassages: Passage[] = [
     status: 'paid',
     paidAt: '19/03/2026 22:30:12',
     receiptId: 'CPV-2026-004811',
+    rpvId: 'RPV-2026-004811',
     paymentMethod: 'Pix',
   },
   {
@@ -277,6 +286,7 @@ export const initialPassages: Passage[] = [
     status: 'paid',
     paidAt: '04/02/2026 18:20:59',
     receiptId: 'CPV-2026-003720',
+    rpvId: 'RPV-2026-003720',
     paymentMethod: 'Saldo em conta',
   },
   {
@@ -296,6 +306,7 @@ export const initialPassages: Passage[] = [
     status: 'paid',
     paidAt: '21/01/2026 20:05:08',
     receiptId: 'CPV-2026-002615',
+    rpvId: 'RPV-2026-002615',
     paymentMethod: 'Pix',
   },
 ];

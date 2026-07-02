@@ -5,12 +5,21 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { useAuthGuard } from '@/components/AuthGuard';
+
 import { PassagesProvider } from '@/context/PassagesContext';
 import { PaymentProfileProvider } from '@/context/PaymentProfileContext';
+import { AuthProvider } from '@/context/AuthContext';
+import { GuestConsultProvider } from '@/context/GuestConsultContext';
 import { VehiclesProvider } from '@/context/VehiclesContext';
 import { colors } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
+
+function RootNavigationGuard() {
+  useAuthGuard();
+  return null;
+}
 
 export default function RootLayout() {
   useEffect(() => {
@@ -19,6 +28,9 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
+      <AuthProvider>
+      <GuestConsultProvider>
+      <RootNavigationGuard />
       <PassagesProvider>
       <PaymentProfileProvider>
       <VehiclesProvider>
@@ -29,6 +41,12 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.groupedBackground },
         }}
       >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="splash" />
+        <Stack.Screen name="consulta-placa" />
+        <Stack.Screen name="consulta-resultado" />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="cadastro" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="pagar"
@@ -69,6 +87,8 @@ export default function RootLayout() {
       </VehiclesProvider>
       </PaymentProfileProvider>
       </PassagesProvider>
+      </GuestConsultProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

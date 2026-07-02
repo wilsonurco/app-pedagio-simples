@@ -10,6 +10,7 @@ import { PassagesPaymentFooter } from '@/components/dashboard/PassagesPaymentFoo
 import { PassagesToPayPanel } from '@/components/dashboard/PassagesToPayPanel';
 import { PromoBanner } from '@/components/dashboard/PromoBanner';
 import { isFiscalTechEnabled } from '@/config/dataSource';
+import { useAuth } from '@/context/AuthContext';
 import { usePassages } from '@/context/PassagesContext';
 import { useVehicles } from '@/context/VehiclesContext';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
@@ -20,6 +21,7 @@ import { buildDashboardSummary } from '@/utils/dashboardSummary';
 
 export default function HomeScreen() {
   const topPadding = useAppTopPadding(spacing.sm);
+  const { user } = useAuth();
   const { pendingPassages, pendingTotal, isLoading, loadError, refreshDebts } = usePassages();
   const { vehicles, isHydrated } = useVehicles();
   const [filter, setFilter] = useState<PassageFilter>('all');
@@ -121,7 +123,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.stack}>
-          <DashboardGreeting summary={dashboardSummary} />
+          <DashboardGreeting summary={dashboardSummary} userName={user?.name ?? 'visitante'} />
 
           {isFiscalTechEnabled() && isLoading ? (
             <View style={styles.loadingRow}>

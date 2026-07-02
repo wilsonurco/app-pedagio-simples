@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+import { requireAuth } from '../_lib/auth/requireAuth';
 import { fiscaltechRequest } from '../_lib/fiscaltech/client';
 import { getIdempotencyKey, handleOptions, internalError, methodNotAllowed, sendJson } from '../_lib/http';
 
@@ -15,7 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const reservaId = getReservaId(req);
   if (!reservaId) {
-    sendJson(res, 400, {
+    sendJson(req, res, 400, {
       erro: 'REQUISICAO_INVALIDA',
       mensagem: 'Parâmetro reservaId é obrigatório.',
     });
@@ -23,9 +24,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method !== 'GET') {
-    methodNotAllowed(res, ['GET']);
+    methodNotAllowed(req, res, ['GET']);
     return;
   }
+
+  if (!requireAuth(req, res)) return;
 
   try {
     const result = await fiscaltechRequest({
@@ -34,8 +37,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       requestId: getIdempotencyKey(req),
     });
 
-    sendJson(res, result.status, result.data, { 'X-Request-Id': result.requestId });
+    sendJson(req, res, result.status, result.data, { 'X-Request-Id': result.requestId });
   } catch (error) {
-    internalError(res, error);
+    internalError(req, res, error);
   }
 }

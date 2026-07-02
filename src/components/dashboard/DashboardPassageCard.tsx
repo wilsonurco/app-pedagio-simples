@@ -243,7 +243,8 @@ const styles = StyleSheet.create({
   },
   details: {
     gap: spacing.md,
-    marginHorizontal: spacing.lg,
+    marginLeft: spacing.lg + 22 + spacing.md,
+    marginRight: spacing.lg,
     marginBottom: spacing.lg,
     paddingTop: spacing.md,
     paddingHorizontal: spacing.md,

@@ -124,6 +124,7 @@ export default function CreditCardPaymentScreen() {
         total={paymentResult.total}
         paymentMethod="Cartão de crédito"
         protocol={paymentResult.protocol}
+        paidPassageIds={fiscaltechEnabled ? payableIds : pendingSelectedIds}
       />
     );
   }
