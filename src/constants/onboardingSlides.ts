@@ -1,6 +1,8 @@
 export type OnboardingSlide = {
   id: string;
   image: number;
+  /** Título de destaque no centro da tela (ex.: splash intro). */
+  showHeroTitle?: boolean;
   eyebrow: string;
   title: string;
   highlight: string;
@@ -11,6 +13,7 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
   {
     id: 'consulta',
     image: require('@/assets/images/onboarding/onboarding-1-highway-gantry.png'),
+    showHeroTitle: true,
     eyebrow: 'Passo 01',
     title: 'Consulte pelo número da',
     highlight: 'placa',

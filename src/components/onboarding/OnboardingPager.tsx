@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PayButton } from '@/components/PayButton';
 import { OnboardingHeader } from '@/components/onboarding/OnboardingHeader';
+import { OnboardingHeroTitle } from '@/components/onboarding/OnboardingHeroTitle';
 import { ONBOARDING_SLIDES, type OnboardingSlide } from '@/constants/onboardingSlides';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -60,23 +61,34 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         <OnboardingSlideScrim />
 
         {index === activeIndex && (
-          <Animated.View
-            entering={FadeInDown.duration(420).delay(80)}
-            style={[styles.textPanel, { paddingBottom: footerHeight }]}
-          >
-            <View style={styles.stepBadge}>
-              <Text style={styles.stepBadgeText}>{item.eyebrow}</Text>
-            </View>
-            <Text style={styles.title}>
-              {item.title}{' '}
-              <Text style={styles.highlight}>{item.highlight}</Text>
-            </Text>
-            <Text style={styles.description}>{item.description}</Text>
-          </Animated.View>
+          <>
+            {item.showHeroTitle ? (
+              <Animated.View
+                entering={FadeInDown.duration(480).delay(40)}
+                style={[styles.heroPanel, { top: insets.top + 72 }]}
+              >
+                <OnboardingHeroTitle />
+              </Animated.View>
+            ) : null}
+
+            <Animated.View
+              entering={FadeInDown.duration(420).delay(120)}
+              style={[styles.textPanel, { paddingBottom: footerHeight }]}
+            >
+              <View style={styles.stepBadge}>
+                <Text style={styles.stepBadgeText}>{item.eyebrow}</Text>
+              </View>
+              <Text style={styles.title}>
+                {item.title}{' '}
+                <Text style={styles.highlight}>{item.highlight}</Text>
+              </Text>
+              <Text style={styles.description}>{item.description}</Text>
+            </Animated.View>
+          </>
         )}
       </View>
     ),
-    [activeIndex, footerHeight, height, width],
+    [activeIndex, footerHeight, height, insets.top, width],
   );
 
   return (
@@ -148,6 +160,12 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
   },
+  heroPanel: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 6,
+  },
   textPanel: {
     position: 'absolute',
     left: 0,
@@ -174,10 +192,10 @@ const styles = StyleSheet.create({
   },
   title: {
     ...fonts.bold,
-    fontSize: fontSize.title1,
+    fontSize: fontSize.title2,
     color: colors.onTint,
-    letterSpacing: -0.5,
-    lineHeight: 34,
+    letterSpacing: -0.4,
+    lineHeight: 28,
   },
   highlight: {
     color: colors.promoAccent,
