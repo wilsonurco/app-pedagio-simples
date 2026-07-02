@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -41,10 +41,16 @@ export default function CadastroSenhaScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [registerVehicle, setRegisterVehicle] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!registrationDraft) {
-    router.replace('/cadastro' as Href);
+  useEffect(() => {
+    if (!registrationDraft && !isCompleting && !loading) {
+      router.replace('/cadastro' as Href);
+    }
+  }, [registrationDraft, isCompleting, loading]);
+
+  if (!registrationDraft && !isCompleting) {
     return null;
   }
 
@@ -98,9 +104,10 @@ export default function CadastroSenhaScreen() {
         }).catch(() => undefined);
       }
 
+      setIsCompleting(true);
       clearRegistrationDraft();
       clearConsult();
-      router.replace('/(tabs)');
+      router.replace('/cadastro/concluido' as Href);
     } catch (submitError) {
       const message =
         submitError instanceof AuthApiError
