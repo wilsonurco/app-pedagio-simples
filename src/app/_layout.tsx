@@ -42,6 +42,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
         <Stack.Screen name="splash" />
         <Stack.Screen name="consulta-placa" />
         <Stack.Screen name="consulta-resultado" />
