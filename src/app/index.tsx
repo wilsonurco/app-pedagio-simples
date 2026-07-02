@@ -2,15 +2,19 @@ import { Redirect, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
+import { shouldShowOnboarding, FORCE_ONBOARDING_EVERY_SESSION } from '@/config/onboarding';
 import { useAuth } from '@/context/AuthContext';
 import { colors } from '@/theme/tokens';
 import { hasCompletedOnboarding } from '@/utils/onboardingStorage';
 
 export default function IndexScreen() {
   const { isAuthenticated, isBootstrapping } = useAuth();
-  const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
+  const [onboardingDone, setOnboardingDone] = useState<boolean | null>(
+    FORCE_ONBOARDING_EVERY_SESSION ? false : null,
+  );
 
   useEffect(() => {
+    if (FORCE_ONBOARDING_EVERY_SESSION) return;
     hasCompletedOnboarding().then(setOnboardingDone);
   }, []);
 
@@ -26,7 +30,7 @@ export default function IndexScreen() {
     return <Redirect href="/(tabs)" />;
   }
 
-  if (!onboardingDone) {
+  if (shouldShowOnboarding(onboardingDone)) {
     return <Redirect href={'/onboarding' as Href} />;
   }
 
