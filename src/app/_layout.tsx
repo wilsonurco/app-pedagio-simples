@@ -42,7 +42,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: colors.groupedBackground },
+          contentStyle: { flex: 1, backgroundColor: colors.groupedBackground },
         }}
       >
         <Stack.Screen name="index" />

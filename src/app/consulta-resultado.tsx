@@ -3,11 +3,14 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PayButton } from '@/components/PayButton';
+import {
+  ScreenStickyFooter,
+  useStickyFooterScrollPadding,
+} from '@/components/ScreenStickyFooter';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { GroupedList } from '@/components/ui/GroupedList';
 import { useGuestConsult } from '@/context/GuestConsultContext';
-import { useFooterBottomPadding } from '@/hooks/useFooterBottomPadding';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -18,7 +21,7 @@ function pendingLabel(count: number): string {
 
 export default function ConsultaResultadoScreen() {
   const insets = useSafeAreaInsets();
-  const footerBottom = useFooterBottomPadding();
+  const footerScrollPad = useStickyFooterScrollPadding();
   const { consultedPlate, lookupResult, pendingDebitCount } = useGuestConsult();
 
   if (!consultedPlate || !lookupResult || lookupResult.found === false) {
@@ -32,7 +35,10 @@ export default function ConsultaResultadoScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + spacing.sm, paddingBottom: spacing.xxl },
+          {
+            paddingTop: insets.top + spacing.sm,
+            paddingBottom: hasPending ? footerScrollPad : spacing.xxl,
+          },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -72,9 +78,9 @@ export default function ConsultaResultadoScreen() {
       </ScrollView>
 
       {hasPending ? (
-        <View style={[styles.footer, { paddingBottom: footerBottom }]}>
+        <ScreenStickyFooter>
           <PayButton label="Criar conta para ver e pagar" onPress={() => router.push('/cadastro' as Href)} />
-        </View>
+        </ScreenStickyFooter>
       ) : null}
     </View>
   );
@@ -145,10 +151,5 @@ const styles = StyleSheet.create({
     fontSize: fontSize.footnote,
     color: colors.secondaryLabel,
     lineHeight: 20,
-  },
-  footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    backgroundColor: colors.secondaryBackground,
   },
 });

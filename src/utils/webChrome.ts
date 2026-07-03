@@ -4,9 +4,19 @@ import { usePathname } from 'expo-router';
 
 const DARK_BG = '#000000';
 const LIGHT_BG = '#F2F2F7';
+const WHITE_BG = '#FFFFFF';
 
 /** Rotas com visual escuro edge-to-edge (imagem full screen). */
 const DARK_ROUTES = new Set(['/onboarding']);
+
+/** Rotas com footer branco colado na base — body/html branco evita tarja cinza no PWA iOS. */
+const WHITE_CHROME_ROUTES = new Set([
+  '/consulta-resultado',
+  '/pagar',
+  '/pagar-forma',
+  '/pagar-pix',
+  '/pagar-cartao',
+]);
 
 /**
  * Controla, no web (PWA iOS), o fundo do documento e o theme-color por rota.
@@ -19,7 +29,11 @@ export function useWebChrome() {
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof document === 'undefined') return;
 
-    const bg = DARK_ROUTES.has(pathname) ? DARK_BG : LIGHT_BG;
+    const bg = DARK_ROUTES.has(pathname)
+      ? DARK_BG
+      : WHITE_CHROME_ROUTES.has(pathname)
+        ? WHITE_BG
+        : LIGHT_BG;
 
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
 

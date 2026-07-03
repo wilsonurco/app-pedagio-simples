@@ -1,10 +1,27 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
+function isIosPwaStandalone(): boolean {
+  if (typeof window === 'undefined') return false;
+  const nav = window.navigator as Navigator & { standalone?: boolean };
+  return (
+    nav.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches
+  );
+}
+
+function getLockedHeight(): number {
+  // No PWA iOS, visualViewport.height fica menor que a tela e deixa faixa cinza abaixo do app.
+  if (isIosPwaStandalone()) {
+    return window.innerHeight;
+  }
+  return window.visualViewport?.height ?? window.innerHeight;
+}
+
 /**
- * Trava html/body/#root na altura real do visualViewport no web.
- * No PWA standalone do iOS, min-height: 100dvh estica o documento além da
- * área visível e deixa uma faixa cinza (#F2F2F7 do body) abaixo do footer.
+ * Trava html/body/#root na altura real da viewport no web.
+ * No PWA standalone do iOS, visualViewport menor que innerHeight deixa faixa cinza
+ * (#F2F2F7 do body) abaixo do footer.
  */
 export function useWebViewportLock() {
   useEffect(() => {
@@ -14,7 +31,7 @@ export function useWebViewportLock() {
     const { body } = document;
 
     const apply = () => {
-      const height = window.visualViewport?.height ?? window.innerHeight;
+      const height = getLockedHeight();
       const px = `${height}px`;
 
       html.style.setProperty('--app-height', px);
