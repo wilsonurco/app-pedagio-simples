@@ -26,16 +26,7 @@ export function getInvalidPlateMessage(plate: string) {
   return `Formato inválido: "${normalized}". Use Mercosul (ABC1D23) ou antigo (ABC1234).`;
 }
 
-const SIMULATED_PLATE_REGISTRY: Record<string, string> = {
-  BRA2E19: 'Honda Civic',
-  ABC1D23: 'Toyota Corolla',
-  XYZ9F87: 'Jeep Compass',
-  MOV1234: 'Volkswagen T-Cross',
-  QWE4R56: 'Hyundai HB20',
-  FGH7J89: 'Chevrolet Onix',
-  RIO2A34: 'Fiat Argo',
-  PQR5T67: 'Renault Kwid',
-};
+const SIMULATED_PLATE_REGISTRY: Record<string, string> = {};
 
 const LOOKUP_DELAY_MS = 900;
 
