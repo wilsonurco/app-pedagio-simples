@@ -3,6 +3,7 @@ import {
   FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -33,8 +34,18 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
   const listRef = useRef<FlatList<OnboardingSlide>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const isWeb = Platform.OS === 'web';
+  const slideSizeStyle = isWeb
+    ? ({ width: '100%', height: '100dvh' } as const)
+    : ({ width, height } as const);
+  const rootStyle = isWeb
+    ? [styles.root, styles.rootWeb]
+    : styles.root;
+  const listStyle = isWeb ? [styles.list, styles.listWeb] : styles.list;
+
   const isLast = activeIndex === ONBOARDING_SLIDES.length - 1;
-  const footerHeight = insets.bottom + spacing.lg + 120;
+  const footerReserve = spacing.md + 8 + spacing.md + 52 + spacing.lg;
+  const footerHeight = insets.bottom + footerReserve;
   const heroTop = insets.top + spacing.sm + 36 + spacing.lg;
 
   const goNext = useCallback(() => {
@@ -57,7 +68,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
 
   const renderSlide = useCallback(
     ({ item, index }: { item: OnboardingSlide; index: number }) => (
-      <View style={[styles.slide, { width, height }]}>
+      <View style={[styles.slide, slideSizeStyle]}>
         <OnboardingSlideHero image={item.image} isActive={index === activeIndex} />
         <OnboardingSlideScrim />
 
@@ -89,11 +100,11 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         )}
       </View>
     ),
-    [activeIndex, footerHeight, heroTop, height, width],
+    [activeIndex, footerHeight, heroTop, slideSizeStyle, width],
   );
 
   return (
-    <View style={styles.root}>
+    <View style={rootStyle}>
       <FlatList
         ref={listRef}
         data={ONBOARDING_SLIDES}
@@ -106,7 +117,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         scrollEventThrottle={16}
         bounces={false}
         getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
-        style={styles.list}
+        style={listStyle}
       />
 
       <OnboardingHeader
@@ -114,7 +125,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         style={[styles.header, { paddingTop: insets.top + spacing.sm }]}
       />
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.lg }]}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) + spacing.sm }]}>
         <View style={styles.dots} accessibilityRole="tablist">
           {ONBOARDING_SLIDES.map((slide, index) => (
             <View
@@ -148,8 +159,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.label,
   },
+  rootWeb: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100dvh',
+  },
   list: {
     flex: 1,
+  },
+  listWeb: {
+    width: '100%',
+    height: '100dvh',
   },
   slide: {
     overflow: 'hidden',

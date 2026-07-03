@@ -14,11 +14,22 @@ export default function OnboardingScreen() {
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
+
     const meta = document.querySelector('meta[name="theme-color"]');
-    const previous = meta?.getAttribute('content');
+    const previousTheme = meta?.getAttribute('content');
     meta?.setAttribute('content', '#000000');
+
+    const { body } = document;
+    const root = document.getElementById('root');
+    const previousBodyBg = body.style.backgroundColor;
+    const previousRootBg = root?.style.backgroundColor ?? '';
+    body.style.backgroundColor = '#000000';
+    if (root) root.style.backgroundColor = '#000000';
+
     return () => {
-      if (previous) meta?.setAttribute('content', previous);
+      if (previousTheme) meta?.setAttribute('content', previousTheme);
+      body.style.backgroundColor = previousBodyBg;
+      if (root) root.style.backgroundColor = previousRootBg;
     };
   }, []);
 
