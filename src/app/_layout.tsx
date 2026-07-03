@@ -14,11 +14,13 @@ import { GuestConsultProvider } from '@/context/GuestConsultContext';
 import { VehiclesProvider } from '@/context/VehiclesContext';
 import { colors } from '@/theme/tokens';
 import { useWebChrome } from '@/utils/webChrome';
+import { useWebViewportLock } from '@/utils/webViewport';
 
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigationGuard() {
   useAuthGuard();
+  useWebViewportLock();
   useWebChrome();
   return null;
 }

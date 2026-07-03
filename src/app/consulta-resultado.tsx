@@ -7,6 +7,7 @@ import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { GroupedList } from '@/components/ui/GroupedList';
 import { useGuestConsult } from '@/context/GuestConsultContext';
+import { useFooterBottomPadding } from '@/hooks/useFooterBottomPadding';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -17,6 +18,7 @@ function pendingLabel(count: number): string {
 
 export default function ConsultaResultadoScreen() {
   const insets = useSafeAreaInsets();
+  const footerBottom = useFooterBottomPadding();
   const { consultedPlate, lookupResult, pendingDebitCount } = useGuestConsult();
 
   if (!consultedPlate || !lookupResult || lookupResult.found === false) {
@@ -70,7 +72,7 @@ export default function ConsultaResultadoScreen() {
       </ScrollView>
 
       {hasPending ? (
-        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+        <View style={[styles.footer, { paddingBottom: footerBottom }]}>
           <PayButton label="Criar conta para ver e pagar" onPress={() => router.push('/cadastro' as Href)} />
         </View>
       ) : null}
@@ -148,7 +150,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     backgroundColor: colors.secondaryBackground,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.separator,
   },
 });

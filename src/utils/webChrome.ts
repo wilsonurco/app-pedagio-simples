@@ -31,12 +31,9 @@ export function useWebChrome() {
     body.style.backgroundColor = bg;
     if (root) root.style.backgroundColor = bg;
 
-    // Remove resíduos de altura/overflow deixados por efeitos de telas anteriores.
+    // Altura/overflow são controlados por useWebViewportLock — não resetar aqui.
     for (const el of [html, body, root]) {
       if (!el) continue;
-      el.style.removeProperty('overflow');
-      el.style.removeProperty('height');
-      el.style.removeProperty('min-height');
       el.style.removeProperty('margin');
       el.style.removeProperty('padding');
     }
