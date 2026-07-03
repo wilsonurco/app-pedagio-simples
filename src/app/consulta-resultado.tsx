@@ -1,4 +1,4 @@
-import { router, type Href } from 'expo-router';
+import { Redirect, router, type Href } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -20,8 +20,7 @@ export default function ConsultaResultadoScreen() {
   const { consultedPlate, lookupResult, pendingDebitCount } = useGuestConsult();
 
   if (!consultedPlate || !lookupResult || lookupResult.found === false) {
-    router.replace('/consulta-placa' as Href);
-    return null;
+    return <Redirect href={'/consulta-placa' as Href} />;
   }
 
   const hasPending = pendingDebitCount > 0;
