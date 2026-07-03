@@ -58,11 +58,11 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
   }, [isWeb]);
 
   const slideHeight = isWeb ? viewportHeight : height;
-  const rootStyle = isWeb ? [styles.root, styles.rootWeb] : styles.root;
 
   const isLast = activeIndex === ONBOARDING_SLIDES.length - 1;
-  const footerReserve = spacing.md + 8 + spacing.md + 52 + spacing.lg;
-  const footerHeight = insets.bottom + footerReserve;
+  const footerBottomPad = isWeb ? spacing.lg : insets.bottom + spacing.lg;
+  const footerReserve = spacing.md + 8 + spacing.md + 52 + spacing.md;
+  const footerHeight = footerBottomPad + footerReserve;
   const heroTop = insets.top + spacing.sm + 36 + spacing.lg;
 
   const goNext = useCallback(() => {
@@ -117,11 +117,11 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         )}
       </View>
     ),
-    [activeIndex, footerHeight, heroTop, slideHeight, width],
+    [activeIndex, footerBottomPad, footerHeight, heroTop, slideHeight, width],
   );
 
   return (
-    <View style={rootStyle}>
+    <View style={styles.root}>
       <FlatList
         ref={listRef}
         data={ONBOARDING_SLIDES}
@@ -142,7 +142,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         style={[styles.header, { paddingTop: insets.top + spacing.sm }]}
       />
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) + spacing.sm }]}>
+      <View style={[styles.footer, { paddingBottom: footerBottomPad }]}>
         <View style={styles.dots} accessibilityRole="tablist">
           {ONBOARDING_SLIDES.map((slide, index) => (
             <View
@@ -175,13 +175,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: colors.label,
-  },
-  rootWeb: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
   },
   list: {
     flex: 1,
