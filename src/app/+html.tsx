@@ -30,6 +30,7 @@ export default function Root({ children }: PropsWithChildren) {
             __html: `
               html, body, #root {
                 height: 100%;
+                min-height: 100dvh;
               }
               html {
                 background-color: #F2F2F7;
