@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { password, vehicle, ...profile } = validation.data;
 
-    const user = createUser({
+    const user = await createUser({
       ...profile,
       passwordHash: hashPassword(password),
     });

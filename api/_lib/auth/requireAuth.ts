@@ -9,10 +9,10 @@ export type AuthContext = {
   user: StoredUser;
 };
 
-export function requireAuth(
+export async function requireAuth(
   req: VercelRequest,
   res: VercelResponse,
-): AuthContext | null {
+): Promise<AuthContext | null> {
   const token = getSessionTokenFromRequest(req);
   const session = verifySessionToken(token);
 
@@ -24,7 +24,7 @@ export function requireAuth(
     return null;
   }
 
-  const user = findUserById(session.userId);
+  const user = await findUserById(session.userId);
   if (!user) {
     sendJson(req, res, 401, {
       erro: 'NAO_AUTENTICADO',
@@ -36,12 +36,12 @@ export function requireAuth(
   return { user };
 }
 
-export function getOptionalAuth(req: VercelRequest): AuthContext | null {
+export async function getOptionalAuth(req: VercelRequest): Promise<AuthContext | null> {
   const token = getSessionTokenFromRequest(req);
   const session = verifySessionToken(token);
   if (!session) return null;
 
-  const user = findUserById(session.userId);
+  const user = await findUserById(session.userId);
   return user ? { user } : null;
 }
 

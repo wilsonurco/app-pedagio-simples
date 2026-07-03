@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  if (!requireAuth(req, res)) return;
+  if (!(await requireAuth(req, res))) return;
 
   try {
     const result = await fiscaltechRequest({

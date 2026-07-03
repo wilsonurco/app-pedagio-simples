@@ -1,3 +1,5 @@
+import { neon } from '@neondatabase/serverless';
+
 export type StoredUser = {
   id: string;
   cpf: string;
@@ -9,64 +11,83 @@ export type StoredUser = {
   createdAt: string;
 };
 
-type UserStoreGlobal = typeof globalThis & {
-  __psUserStore?: Map<string, StoredUser>;
-  __psUserByCpf?: Map<string, string>;
-  __psUserByPhone?: Map<string, string>;
+export class UserStoreConfigError extends Error {
+  constructor() {
+    super('DATABASE_URL ausente. Configure a conexão do banco de usuários.');
+    this.name = 'UserStoreConfigError';
+  }
+}
+
+type UserRow = {
+  id: string;
+  cpf: string;
+  name: string;
+  birth_date: string;
+  email: string | null;
+  phone: string;
+  password_hash: string;
+  created_at: string;
 };
 
-function getStore() {
-  const globalStore = globalThis as UserStoreGlobal;
+function getDb() {
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new UserStoreConfigError();
+  return neon(url);
+}
 
-  if (!globalStore.__psUserStore) {
-    globalStore.__psUserStore = new Map();
-    globalStore.__psUserByCpf = new Map();
-    globalStore.__psUserByPhone = new Map();
-  }
-
+function toStoredUser(row: UserRow): StoredUser {
   return {
-    users: globalStore.__psUserStore,
-    byCpf: globalStore.__psUserByCpf!,
-    byPhone: globalStore.__psUserByPhone!,
+    id: row.id,
+    cpf: row.cpf,
+    name: row.name,
+    birthDate: row.birth_date,
+    email: row.email ?? undefined,
+    phone: row.phone,
+    passwordHash: row.password_hash,
+    createdAt: row.created_at,
   };
 }
 
-export function findUserById(id: string): StoredUser | undefined {
-  return getStore().users.get(id);
+export async function findUserById(id: string): Promise<StoredUser | undefined> {
+  const sql = getDb();
+  const rows = (await sql`SELECT * FROM users WHERE id = ${id} LIMIT 1`) as UserRow[];
+  return rows[0] ? toStoredUser(rows[0]) : undefined;
 }
 
-export function findUserByCpf(cpf: string): StoredUser | undefined {
-  const id = getStore().byCpf.get(cpf);
-  return id ? getStore().users.get(id) : undefined;
+export async function findUserByCpf(cpf: string): Promise<StoredUser | undefined> {
+  const sql = getDb();
+  const rows = (await sql`SELECT * FROM users WHERE cpf = ${cpf} LIMIT 1`) as UserRow[];
+  return rows[0] ? toStoredUser(rows[0]) : undefined;
 }
 
-export function findUserByPhone(phone: string): StoredUser | undefined {
-  const id = getStore().byPhone.get(phone);
-  return id ? getStore().users.get(id) : undefined;
+export async function findUserByPhone(phone: string): Promise<StoredUser | undefined> {
+  const sql = getDb();
+  const rows = (await sql`SELECT * FROM users WHERE phone = ${phone} LIMIT 1`) as UserRow[];
+  return rows[0] ? toStoredUser(rows[0]) : undefined;
 }
 
-export function createUser(input: Omit<StoredUser, 'id' | 'createdAt'>): StoredUser {
-  const { users, byCpf, byPhone } = getStore();
+export async function createUser(
+  input: Omit<StoredUser, 'id' | 'createdAt'>,
+): Promise<StoredUser> {
+  const sql = getDb();
 
-  if (byCpf.has(input.cpf)) {
-    throw new Error('CPF já cadastrado.');
-  }
+  const [byCpf, byPhone] = await Promise.all([
+    findUserByCpf(input.cpf),
+    findUserByPhone(input.phone),
+  ]);
 
-  if (byPhone.has(input.phone)) {
-    throw new Error('Telefone já cadastrado.');
-  }
+  if (byCpf) throw new Error('CPF já cadastrado.');
+  if (byPhone) throw new Error('Telefone já cadastrado.');
 
-  const user: StoredUser = {
-    ...input,
-    id: `usr_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`,
-    createdAt: new Date().toISOString(),
-  };
+  const id = `usr_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-  users.set(user.id, user);
-  byCpf.set(user.cpf, user.id);
-  byPhone.set(user.phone, user.id);
+  const rows = (await sql`
+    INSERT INTO users (id, cpf, name, birth_date, email, phone, password_hash)
+    VALUES (${id}, ${input.cpf}, ${input.name}, ${input.birthDate}, ${input.email ?? null}, ${input.phone}, ${input.passwordHash})
+    RETURNING *
+  `) as UserRow[];
 
-  return user;
+  return toStoredUser(rows[0]);
 }
 
 export function toPublicUser(user: StoredUser) {

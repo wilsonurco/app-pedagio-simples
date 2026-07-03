@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const user = findUserByCpf(cpf);
+    const user = await findUserByCpf(cpf);
     if (!user || !verifyPassword(password, user.passwordHash)) {
       sendJson(req, res, 401, {
         erro: 'CREDENCIAIS_INVALIDAS',

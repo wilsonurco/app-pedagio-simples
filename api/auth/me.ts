@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const auth = getOptionalAuth(req);
+    const auth = await getOptionalAuth(req);
 
     if (!auth) {
       sendJson(req, res, 401, {
