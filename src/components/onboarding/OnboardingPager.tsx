@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   NativeScrollEvent,
@@ -33,15 +33,32 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
   const insets = useSafeAreaInsets();
   const listRef = useRef<FlatList<OnboardingSlide>>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(height);
 
   const isWeb = Platform.OS === 'web';
-  const slideSizeStyle = isWeb
-    ? ({ width: '100%', height: '100dvh' } as const)
-    : ({ width, height } as const);
-  const rootStyle = isWeb
-    ? [styles.root, styles.rootWeb]
-    : styles.root;
-  const listStyle = isWeb ? [styles.list, styles.listWeb] : styles.list;
+
+  useEffect(() => {
+    setViewportHeight(height);
+  }, [height]);
+
+  useEffect(() => {
+    if (!isWeb || typeof window === 'undefined') return;
+
+    const syncHeight = () => {
+      setViewportHeight(window.visualViewport?.height ?? window.innerHeight);
+    };
+
+    syncHeight();
+    window.visualViewport?.addEventListener('resize', syncHeight);
+    window.addEventListener('resize', syncHeight);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', syncHeight);
+      window.removeEventListener('resize', syncHeight);
+    };
+  }, [isWeb]);
+
+  const slideHeight = isWeb ? viewportHeight : height;
+  const rootStyle = isWeb ? [styles.root, styles.rootWeb] : styles.root;
 
   const isLast = activeIndex === ONBOARDING_SLIDES.length - 1;
   const footerReserve = spacing.md + 8 + spacing.md + 52 + spacing.lg;
@@ -68,7 +85,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
 
   const renderSlide = useCallback(
     ({ item, index }: { item: OnboardingSlide; index: number }) => (
-      <View style={[styles.slide, slideSizeStyle]}>
+      <View style={[styles.slide, { width, height: slideHeight }]}>
         <OnboardingSlideHero image={item.image} isActive={index === activeIndex} />
         <OnboardingSlideScrim />
 
@@ -100,7 +117,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         )}
       </View>
     ),
-    [activeIndex, footerHeight, heroTop, slideSizeStyle, width],
+    [activeIndex, footerHeight, heroTop, slideHeight, width],
   );
 
   return (
@@ -117,7 +134,7 @@ export function OnboardingPager({ onComplete }: OnboardingPagerProps) {
         scrollEventThrottle={16}
         bounces={false}
         getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
-        style={listStyle}
+        style={styles.list}
       />
 
       <OnboardingHeader
@@ -165,15 +182,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    width: '100%',
-    height: '100dvh',
   },
   list: {
     flex: 1,
-  },
-  listWeb: {
-    width: '100%',
-    height: '100dvh',
   },
   slide: {
     overflow: 'hidden',
