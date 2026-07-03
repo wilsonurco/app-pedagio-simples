@@ -13,11 +13,13 @@ import { AuthProvider } from '@/context/AuthContext';
 import { GuestConsultProvider } from '@/context/GuestConsultContext';
 import { VehiclesProvider } from '@/context/VehiclesContext';
 import { colors } from '@/theme/tokens';
+import { useWebChrome } from '@/utils/webChrome';
 
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigationGuard() {
   useAuthGuard();
+  useWebChrome();
   return null;
 }
 

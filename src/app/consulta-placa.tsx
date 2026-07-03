@@ -48,26 +48,6 @@ export default function ConsultaPlacaScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
-
-    const html = document.documentElement;
-    const { body } = document;
-    const root = document.getElementById('root');
-
-    html.style.overflow = '';
-    html.style.height = '';
-    body.style.overflow = '';
-    body.style.height = '';
-    body.style.minHeight = '';
-    body.style.margin = '';
-    body.style.padding = '';
-    if (root) {
-      root.style.height = '';
-      root.style.minHeight = '';
-    }
-  }, []);
-
-  useEffect(() => {
     if (!isCompletePlate(plate)) {
       setModel('');
       setLookupStatus('idle');
@@ -196,7 +176,7 @@ export default function ConsultaPlacaScreen() {
         </GroupedList>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
         <PayButton
           label="Ver débitos"
           loading={isSubmitting}

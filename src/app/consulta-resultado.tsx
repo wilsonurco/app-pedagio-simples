@@ -70,7 +70,7 @@ export default function ConsultaResultadoScreen() {
       </ScrollView>
 
       {hasPending ? (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
           <PayButton label="Criar conta para ver e pagar" onPress={() => router.push('/cadastro' as Href)} />
         </View>
       ) : null}
