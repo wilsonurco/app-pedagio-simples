@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
@@ -21,7 +21,7 @@ import { buildDashboardSummary } from '@/utils/dashboardSummary';
 
 export default function HomeScreen() {
   const topPadding = useAppTopPadding(spacing.sm);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { pendingPassages, pendingTotal, isLoading, loadError, refreshDebts } = usePassages();
   const { vehicles, isHydrated } = useVehicles();
   const [filter, setFilter] = useState<PassageFilter>('all');
@@ -97,6 +97,11 @@ export default function HomeScreen() {
     [pendingPassages, pendingTotal, vehicles.length],
   );
 
+  async function handleLogout() {
+    await logout();
+    router.replace('/splash' as Href);
+  }
+
   function handlePay() {
     const idsForFilter =
       filter === 'all'
@@ -114,7 +119,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: topPadding }]}>
-        <DashboardHeader />
+        <DashboardHeader onPressLogout={handleLogout} />
       </View>
 
       <ScrollView
