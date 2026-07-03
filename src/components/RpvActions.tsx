@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Download, iconSize, iconStroke, Share2 } from '@/components/ui/icons';
+import { useAccountHolder } from '@/context/AuthContext';
 import type { Passage } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -15,12 +16,13 @@ type RpvActionsProps = {
 
 export function RpvActions({ passage, compact = false }: RpvActionsProps) {
   const [loadingAction, setLoadingAction] = useState<'share' | 'download' | null>(null);
+  const holder = useAccountHolder();
   const rpvId = passage.rpvId ?? generateRpvId(passage.passageId);
 
   async function handleShare() {
     try {
       setLoadingAction('share');
-      await shareRpvPdf(passage);
+      await shareRpvPdf(passage, holder);
     } catch (error) {
       reportRpvActionError(
         'Erro ao compartilhar',
@@ -34,7 +36,7 @@ export function RpvActions({ passage, compact = false }: RpvActionsProps) {
   async function handleDownload() {
     try {
       setLoadingAction('download');
-      await downloadRpvPdf(passage);
+      await downloadRpvPdf(passage, holder);
     } catch (error) {
       reportRpvActionError(
         'Erro ao baixar',

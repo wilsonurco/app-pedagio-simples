@@ -35,7 +35,6 @@ export default function CadastroSenhaScreen() {
   const { register } = useAuth();
   const { registrationDraft, consultedPlate, lookupResult, clearRegistrationDraft, clearConsult } =
     useGuestConsult();
-  const { addVehicle } = useVehicles();
   const { refreshDebts } = usePassages();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -98,7 +97,6 @@ export default function CadastroSenhaScreen() {
       });
 
       if (vehicle) {
-        addVehicle(vehicle);
         await refreshDebts([vehicle.plate], {
           vehicleModels: { [vehicle.plate]: vehicle.model },
         }).catch(() => undefined);

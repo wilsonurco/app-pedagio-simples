@@ -123,29 +123,38 @@ export default function VehicleRegistrationScreen() {
     setPlate(formatPlate(text));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isReady) return;
 
     const normalizedPlate = normalizePlate(plate);
     const vehicle = { plate: normalizedPlate, model: model.trim() };
-    const added = addVehicle(vehicle);
 
-    if (!added) {
-      setLookupStatus('duplicate');
-      return;
-    }
-
-    setRegisteredVehicle(vehicle);
     setStatus('saving');
 
-    if (isFiscalTechEnabled()) {
-      refreshDebts([normalizedPlate], { vehicleModels: { [normalizedPlate]: vehicle.model } })
-        .catch(() => undefined)
-        .finally(() => setStatus('success'));
-      return;
-    }
+    try {
+      const added = await addVehicle(vehicle);
+      if (!added) {
+        setLookupStatus('duplicate');
+        setStatus('idle');
+        return;
+      }
 
-    setTimeout(() => setStatus('success'), 900);
+      setRegisteredVehicle(vehicle);
+
+      if (isFiscalTechEnabled()) {
+        await refreshDebts([normalizedPlate], {
+          vehicleModels: { [normalizedPlate]: vehicle.model },
+        }).catch(() => undefined);
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 900));
+      }
+
+      setStatus('success');
+    } catch {
+      setLookupStatus('lookup_error');
+      setLookupMessage('Não foi possível salvar o veículo. Tente novamente.');
+      setStatus('idle');
+    }
   }
 
   function handleFinish() {

@@ -1,10 +1,16 @@
 import { getBffBaseUrl } from '@/config/dataSource';
 
-import type { AuthErrorBody, AuthUser, RegisterInput } from './types';
+import type {
+  AuthErrorBody,
+  AuthSessionResponse,
+  AuthVehicle,
+  RegisterInput,
+  RegisterResponse,
+} from './types';
 import { AuthApiError } from './types';
 
 type AuthRequestOptions = {
-  method: 'GET' | 'POST';
+  method: 'GET' | 'POST' | 'DELETE';
   path: string;
   body?: unknown;
 };
@@ -42,14 +48,14 @@ async function authRequest<T>(options: AuthRequestOptions): Promise<T> {
 }
 
 export function fetchCurrentUser() {
-  return authRequest<{ user: AuthUser }>({
+  return authRequest<AuthSessionResponse>({
     method: 'GET',
     path: '/api/auth/me',
   });
 }
 
 export function registerUser(payload: RegisterInput) {
-  return authRequest<{ user: AuthUser; vehicle: RegisterInput['vehicle'] | null }>({
+  return authRequest<RegisterResponse>({
     method: 'POST',
     path: '/api/auth/register',
     body: payload,
@@ -57,7 +63,7 @@ export function registerUser(payload: RegisterInput) {
 }
 
 export function loginUser(cpf: string, password: string) {
-  return authRequest<{ user: AuthUser }>({
+  return authRequest<AuthSessionResponse>({
     method: 'POST',
     path: '/api/auth/login',
     body: { cpf, password },
@@ -69,5 +75,27 @@ export function logoutUser() {
     method: 'POST',
     path: '/api/auth/logout',
     body: {},
+  });
+}
+
+export function fetchVehicles() {
+  return authRequest<{ vehicles: AuthVehicle[] }>({
+    method: 'GET',
+    path: '/api/vehicles',
+  });
+}
+
+export function addVehicleRemote(vehicle: AuthVehicle) {
+  return authRequest<{ vehicle: AuthVehicle }>({
+    method: 'POST',
+    path: '/api/vehicles',
+    body: vehicle,
+  });
+}
+
+export function removeVehicleRemote(plate: string) {
+  return authRequest<{ ok: boolean }>({
+    method: 'DELETE',
+    path: `/api/vehicles?plate=${encodeURIComponent(plate)}`,
   });
 }

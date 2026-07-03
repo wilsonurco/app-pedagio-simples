@@ -1,4 +1,5 @@
-import { formatBRL, passageTypeLabels, userProfile, type Passage } from '@/data/mock';
+import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
+import type { AccountHolderInfo } from '@/services/auth/types';
 import { formatDateTimeDisplay } from '@/utils/dateTime';
 import { formatPassageIdNumeric } from '@/utils/passageId';
 
@@ -23,7 +24,7 @@ export function generateRpvId(passageId: string): string {
   return `RPV-${passageId.replace(/^PS-/, '')}`;
 }
 
-export function buildRpvHtml(passage: Passage): string {
+export function buildRpvHtml(passage: Passage, holder: AccountHolderInfo): string {
   const rpvId = passage.rpvId ?? generateRpvId(passage.passageId);
   const passageIdDisplay = formatPassageIdNumeric(passage.passageId);
   const locationDetail =
@@ -152,7 +153,7 @@ export function buildRpvHtml(passage: Passage): string {
     <table>
       ${row('Placa', passage.plate)}
       ${row('Modelo', passage.vehicleModel)}
-      ${row('Titular', userProfile.name)}
+      ${row('Titular', holder.name)}
     </table>
   </div>
 

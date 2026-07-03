@@ -4,6 +4,7 @@ import { setSessionCookie } from '../_lib/auth/cookies';
 import { verifyPassword } from '../_lib/auth/password';
 import { createSessionToken } from '../_lib/auth/session';
 import { findUserByCpf, toPublicUser } from '../_lib/auth/users';
+import { findVehiclesByUserId, toPublicVehicle } from '../_lib/auth/vehicles';
 import { normalizeCpf } from '../_lib/auth/validation';
 import { handleOptions, internalError, methodNotAllowed, sendJson } from '../_lib/http';
 
@@ -37,10 +38,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    const vehicles = await findVehiclesByUserId(user.id);
     const token = createSessionToken(user.id);
     setSessionCookie(res, token);
 
-    sendJson(req, res, 200, { user: toPublicUser(user) });
+    sendJson(req, res, 200, {
+      user: toPublicUser(user),
+      vehicles: vehicles.map(toPublicVehicle),
+    });
   } catch (error) {
     internalError(req, res, error);
   }

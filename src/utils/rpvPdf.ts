@@ -4,11 +4,12 @@ import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
 
 import { formatBRL, type Passage } from '@/data/mock';
+import type { AccountHolderInfo } from '@/services/auth/types';
 
 import { buildRpvHtml, generateRpvId, getRpvFilename } from './rpvHtml';
 
-async function createPdfFile(passage: Passage): Promise<string> {
-  const html = buildRpvHtml(passage);
+async function createPdfFile(passage: Passage, holder: AccountHolderInfo): Promise<string> {
+  const html = buildRpvHtml(passage, holder);
   const { uri } = await Print.printToFileAsync({ html });
   const filename = getRpvFilename(passage);
   const destination = `${FileSystem.cacheDirectory}${filename}`;
@@ -118,15 +119,15 @@ async function downloadRpvOnWeb(html: string, passage: Passage): Promise<void> {
 }
 
 /** Compartilha o RPV em PDF (share sheet no mobile, share/impressão no web). */
-export async function shareRpvPdf(passage: Passage): Promise<void> {
-  const html = buildRpvHtml(passage);
+export async function shareRpvPdf(passage: Passage, holder: AccountHolderInfo): Promise<void> {
+  const html = buildRpvHtml(passage, holder);
 
   if (Platform.OS === 'web') {
     await shareRpvOnWeb(html, passage);
     return;
   }
 
-  const uri = await createPdfFile(passage);
+  const uri = await createPdfFile(passage, holder);
   const canShare = await Sharing.isAvailableAsync();
 
   if (!canShare) {
@@ -141,15 +142,15 @@ export async function shareRpvPdf(passage: Passage): Promise<void> {
 }
 
 /** Baixa ou salva o RPV em PDF. */
-export async function downloadRpvPdf(passage: Passage): Promise<void> {
-  const html = buildRpvHtml(passage);
+export async function downloadRpvPdf(passage: Passage, holder: AccountHolderInfo): Promise<void> {
+  const html = buildRpvHtml(passage, holder);
 
   if (Platform.OS === 'web') {
     await downloadRpvOnWeb(html, passage);
     return;
   }
 
-  const uri = await createPdfFile(passage);
+  const uri = await createPdfFile(passage, holder);
   const canShare = await Sharing.isAvailableAsync();
 
   if (canShare) {

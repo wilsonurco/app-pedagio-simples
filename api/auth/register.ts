@@ -1,11 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 import { setSessionCookie } from '../_lib/auth/cookies';
+import { AuthConfigError } from '../_lib/auth/env';
+import { resolveAuthHandlerError } from '../_lib/auth/errors';
 import { hashPassword } from '../_lib/auth/password';
 import { createSessionToken } from '../_lib/auth/session';
 import { createUser, toPublicUser } from '../_lib/auth/users';
+import { createVehicle, toPublicVehicle } from '../_lib/auth/vehicles';
 import { validateRegisterPayload } from '../_lib/auth/validation';
-import { AuthConfigError } from '../_lib/auth/env';
 import { handleOptions, internalError, methodNotAllowed, sendJson } from '../_lib/http';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -30,12 +32,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       passwordHash: hashPassword(password),
     });
 
+    let savedVehicle = null;
+    if (vehicle) {
+      const created = await createVehicle(user.id, vehicle);
+      savedVehicle = toPublicVehicle(created);
+    }
+
     const token = createSessionToken(user.id);
     setSessionCookie(res, token);
 
     sendJson(req, res, 201, {
       user: toPublicUser(user),
-      vehicle: vehicle ?? null,
+      vehicle: savedVehicle,
+      vehicles: savedVehicle ? [savedVehicle] : [],
     });
   } catch (error) {
     if (error instanceof AuthConfigError) {
@@ -43,11 +52,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const message = error instanceof Error ? error.message : 'Erro ao cadastrar.';
-    if (message.includes('já cadastrado')) {
-      sendJson(req, res, 409, { erro: 'CONFLITO', mensagem: message });
+    const resolved = resolveAuthHandlerError(error);
+    if (resolved) {
+      sendJson(req, res, resolved.status, {
+        erro: resolved.code,
+        mensagem: resolved.message,
+      });
       return;
     }
+
     internalError(req, res, error);
   }
 }

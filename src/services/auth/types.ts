@@ -7,10 +7,12 @@ export type AuthUser = {
   phone: string;
 };
 
-export type RegisterVehicleInput = {
+export type AuthVehicle = {
   plate: string;
   model: string;
 };
+
+export type RegisterVehicleInput = AuthVehicle;
 
 export type RegisterInput = {
   cpf: string;
@@ -20,6 +22,15 @@ export type RegisterInput = {
   phone: string;
   password: string;
   vehicle?: RegisterVehicleInput;
+};
+
+export type AuthSessionResponse = {
+  user: AuthUser;
+  vehicles: AuthVehicle[];
+};
+
+export type RegisterResponse = AuthSessionResponse & {
+  vehicle: AuthVehicle | null;
 };
 
 export type AuthErrorBody = {
@@ -37,3 +48,8 @@ export class AuthApiError extends Error {
     this.code = body.erro;
   }
 }
+
+export type AccountHolderInfo = {
+  name: string;
+  email: string;
+};

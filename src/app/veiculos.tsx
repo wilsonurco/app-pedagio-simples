@@ -10,9 +10,9 @@ export default function VehiclesScreen() {
   const { vehicles, removeVehicle } = useVehicles();
   const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
 
-  function handleConfirmDelete() {
+  async function handleConfirmDelete() {
     if (!vehicleToDelete) return;
-    removeVehicle(vehicleToDelete.plate);
+    await removeVehicle(vehicleToDelete.plate);
     setVehicleToDelete(null);
   }
 

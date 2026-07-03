@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Download, iconSize, iconStroke, Share2 } from '@/components/ui/icons';
+import { useAccountHolder } from '@/context/AuthContext';
 import type { Passage } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -17,11 +18,12 @@ type ReceiptActionsProps = {
 
 export function ReceiptActions({ passage }: ReceiptActionsProps) {
   const [loadingAction, setLoadingAction] = useState<'share' | 'download' | null>(null);
+  const holder = useAccountHolder();
 
   async function handleShare() {
     try {
       setLoadingAction('share');
-      await shareReceiptPdf(passage);
+      await shareReceiptPdf(passage, holder);
     } catch (error) {
       reportReceiptActionError(
         'Erro ao compartilhar',
@@ -35,7 +37,7 @@ export function ReceiptActions({ passage }: ReceiptActionsProps) {
   async function handleDownload() {
     try {
       setLoadingAction('download');
-      await downloadReceiptPdf(passage);
+      await downloadReceiptPdf(passage, holder);
     } catch (error) {
       reportReceiptActionError(
         'Erro ao baixar',

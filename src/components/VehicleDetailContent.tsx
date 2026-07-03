@@ -5,7 +5,8 @@ import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { VehicleAvatar } from '@/components/VehicleAvatar';
 import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
-import { userProfile, type Vehicle } from '@/data/mock';
+import { useAccountHolder } from '@/context/AuthContext';
+import { type Vehicle } from '@/data/mock';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -26,12 +27,13 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 export function VehicleDetailContent({ vehicle }: VehicleDetailContentProps) {
   const insets = useSafeAreaInsets();
   const topPadding = useAppTopPadding(spacing.sm);
+  const holder = useAccountHolder();
 
   const rows = [
     { label: 'Modelo', value: vehicle.model },
     { label: 'Placa', value: vehicle.plate },
-    { label: 'Titular', value: userProfile.name },
-    { label: 'E-mail da conta', value: userProfile.email },
+    { label: 'Titular', value: holder.name },
+    { label: 'E-mail da conta', value: holder.email },
   ];
 
   return (

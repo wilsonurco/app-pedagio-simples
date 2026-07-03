@@ -1,4 +1,5 @@
-import { neon } from '@neondatabase/serverless';
+import { getDb } from './db';
+import { mapDatabaseConflict } from './errors';
 
 export type StoredUser = {
   id: string;
@@ -11,13 +12,6 @@ export type StoredUser = {
   createdAt: string;
 };
 
-export class UserStoreConfigError extends Error {
-  constructor() {
-    super('DATABASE_URL ausente. Configure a conexão do banco de usuários.');
-    this.name = 'UserStoreConfigError';
-  }
-}
-
 type UserRow = {
   id: string;
   cpf: string;
@@ -28,12 +22,6 @@ type UserRow = {
   password_hash: string;
   created_at: string;
 };
-
-function getDb() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new UserStoreConfigError();
-  return neon(url);
-}
 
 function toStoredUser(row: UserRow): StoredUser {
   return {
@@ -70,24 +58,21 @@ export async function createUser(
   input: Omit<StoredUser, 'id' | 'createdAt'>,
 ): Promise<StoredUser> {
   const sql = getDb();
-
-  const [byCpf, byPhone] = await Promise.all([
-    findUserByCpf(input.cpf),
-    findUserByPhone(input.phone),
-  ]);
-
-  if (byCpf) throw new Error('CPF já cadastrado.');
-  if (byPhone) throw new Error('Telefone já cadastrado.');
-
   const id = `usr_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-  const rows = (await sql`
-    INSERT INTO users (id, cpf, name, birth_date, email, phone, password_hash)
-    VALUES (${id}, ${input.cpf}, ${input.name}, ${input.birthDate}, ${input.email ?? null}, ${input.phone}, ${input.passwordHash})
-    RETURNING *
-  `) as UserRow[];
+  try {
+    const rows = (await sql`
+      INSERT INTO users (id, cpf, name, birth_date, email, phone, password_hash)
+      VALUES (${id}, ${input.cpf}, ${input.name}, ${input.birthDate}, ${input.email ?? null}, ${input.phone}, ${input.passwordHash})
+      RETURNING *
+    `) as UserRow[];
 
-  return toStoredUser(rows[0]);
+    return toStoredUser(rows[0]);
+  } catch (error) {
+    const conflict = mapDatabaseConflict(error);
+    if (conflict) throw conflict;
+    throw error;
+  }
 }
 
 export function toPublicUser(user: StoredUser) {
@@ -100,3 +85,5 @@ export function toPublicUser(user: StoredUser) {
     phone: user.phone,
   };
 }
+
+export { UserStoreConfigError } from './db';

@@ -62,12 +62,6 @@ export type Vehicle = {
   model: string;
 };
 
-export type UserProfile = {
-  name: string;
-  email: string;
-  vehicle: Vehicle;
-};
-
 export const history: HistoryPoint[] = [
   { label: 'Jan', value: 120 },
   { label: 'Fev', value: 90 },
@@ -111,15 +105,6 @@ export const merchantPix = {
   key: 'pagamentos@pedagiosimples.com.br',
   name: 'Pedágio Simples',
   city: 'SAO PAULO',
-};
-
-export const userProfile: UserProfile = {
-  name: 'João Wilson',
-  email: 'joao.wilson@email.com',
-  vehicle: {
-    plate: '',
-    model: '',
-  },
 };
 
 export type ProfileMenuItem = {

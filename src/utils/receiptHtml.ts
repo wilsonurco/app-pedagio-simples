@@ -1,4 +1,5 @@
-import { formatBRL, passageTypeLabels, userProfile, type Passage } from '@/data/mock';
+import { formatBRL, passageTypeLabels, type Passage } from '@/data/mock';
+import type { AccountHolderInfo } from '@/services/auth/types';
 import { formatDateTimeDisplay } from '@/utils/dateTime';
 
 function escapeHtml(value: string): string {
@@ -22,7 +23,7 @@ export function generateReceiptId(passageId: string): string {
   return `CPV-${passageId.replace(/^PS-/, '')}`;
 }
 
-export function buildReceiptHtml(passage: Passage): string {
+export function buildReceiptHtml(passage: Passage, holder: AccountHolderInfo): string {
   const receiptId = passage.receiptId ?? generateReceiptId(passage.passageId);
   const locationDetail =
     passage.type === 'free-flow'
@@ -122,7 +123,7 @@ export function buildReceiptHtml(passage: Passage): string {
     <table>
       ${row('Placa', passage.plate)}
       ${row('Modelo', passage.vehicleModel)}
-      ${row('Titular', userProfile.name)}
+      ${row('Titular', holder.name)}
     </table>
   </div>
 

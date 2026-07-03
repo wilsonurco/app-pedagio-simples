@@ -4,11 +4,12 @@ import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
 
 import { formatBRL, type Passage } from '@/data/mock';
+import type { AccountHolderInfo } from '@/services/auth/types';
 
 import { buildReceiptHtml, getReceiptFilename } from './receiptHtml';
 
-async function createPdfFile(passage: Passage): Promise<string> {
-  const html = buildReceiptHtml(passage);
+async function createPdfFile(passage: Passage, holder: AccountHolderInfo): Promise<string> {
+  const html = buildReceiptHtml(passage, holder);
   const { uri } = await Print.printToFileAsync({ html });
   const filename = getReceiptFilename(passage);
   const destination = `${FileSystem.cacheDirectory}${filename}`;
@@ -118,15 +119,15 @@ async function downloadReceiptOnWeb(html: string, passage: Passage): Promise<voi
 }
 
 /** Compartilha o comprovante em PDF (share sheet no mobile, share/impressão no web). */
-export async function shareReceiptPdf(passage: Passage): Promise<void> {
-  const html = buildReceiptHtml(passage);
+export async function shareReceiptPdf(passage: Passage, holder: AccountHolderInfo): Promise<void> {
+  const html = buildReceiptHtml(passage, holder);
 
   if (Platform.OS === 'web') {
     await shareReceiptOnWeb(html, passage);
     return;
   }
 
-  const uri = await createPdfFile(passage);
+  const uri = await createPdfFile(passage, holder);
   const canShare = await Sharing.isAvailableAsync();
 
   if (!canShare) {
@@ -141,15 +142,15 @@ export async function shareReceiptPdf(passage: Passage): Promise<void> {
 }
 
 /** Baixa ou salva o comprovante em PDF. */
-export async function downloadReceiptPdf(passage: Passage): Promise<void> {
-  const html = buildReceiptHtml(passage);
+export async function downloadReceiptPdf(passage: Passage, holder: AccountHolderInfo): Promise<void> {
+  const html = buildReceiptHtml(passage, holder);
 
   if (Platform.OS === 'web') {
     await downloadReceiptOnWeb(html, passage);
     return;
   }
 
-  const uri = await createPdfFile(passage);
+  const uri = await createPdfFile(passage, holder);
   const canShare = await Sharing.isAvailableAsync();
 
   if (canShare) {

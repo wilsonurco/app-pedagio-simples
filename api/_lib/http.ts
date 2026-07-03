@@ -61,6 +61,7 @@ export function methodNotAllowed(req: VercelRequest, res: VercelResponse, allowe
 
 const INTERNAL_ERROR_PATTERNS = [
   /AUTH_SECRET/i,
+  /DATABASE_URL/i,
   /FISCALTECH_/i,
   /process\.env/i,
   /API_KEY/i,
