@@ -26,7 +26,7 @@ export function PromoBanner({ onPress = openMoveMaisSite }: PromoBannerProps) {
       >
         <View style={styles.copy}>
           <Text style={styles.eyebrow}>Tag Move Mais</Text>
-          <Text style={styles.text}>Economize até 30% em pedágios</Text>
+          <Text style={styles.text}>Garanta 5% de desconto em pedágios com a Tag Move Mais</Text>
         </View>
         <Text style={styles.action}>Ver planos</Text>
       </Pressable>
