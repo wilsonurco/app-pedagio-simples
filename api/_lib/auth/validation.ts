@@ -18,6 +18,10 @@ export function normalizeCpf(value: string): string {
   return value.replace(/\D/g, '');
 }
 
+export function normalizePlate(value: string): string {
+  return value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+}
+
 export function normalizePhone(value: string): string {
   const digits = value.replace(/\D/g, '');
   if (digits.startsWith('55') && digits.length >= 12) {
@@ -156,8 +160,8 @@ export function validateRegisterPayload(body: unknown):
       .toUpperCase();
     const model = String(vehiclePayload.model ?? '').trim();
 
-    if (plate.length !== 7 || model.length < 2) {
-      return { ok: false, message: 'Placa ou modelo do veículo inválidos.' };
+    if (plate.length !== 7) {
+      return { ok: false, message: 'Placa do veículo inválida.' };
     }
 
     vehicle = { plate, model };

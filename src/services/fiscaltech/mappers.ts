@@ -59,7 +59,8 @@ export function mapDebitosToPassages(
   const passages: Passage[] = [];
 
   for (const resultado of resultados) {
-    const model = vehicleModels[resultado.placa] ?? 'Veículo';
+    const raw = vehicleModels[resultado.placa]?.trim() ?? '';
+    const model = raw.length >= 2 ? raw : resultado.placa;
     for (const transacao of resultado.transacoes ?? []) {
       passages.push(mapTransacaoToPassage(resultado.placa, transacao, model));
     }

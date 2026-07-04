@@ -57,9 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshSession]);
 
   const login = useCallback(async (cpf: string, password: string) => {
-    const response = await loginUser(cpf, password);
-    setUser(response.user);
-    setVehicles(response.vehicles ?? []);
+    await loginUser(cpf, password);
+    const session = await fetchCurrentUser();
+    setUser(session.user);
+    setVehicles(session.vehicles ?? []);
   }, []);
 
   const register = useCallback(async (payload: RegisterInput) => {

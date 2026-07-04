@@ -8,7 +8,8 @@ import { iconSize, iconStroke, LogOut } from '@/components/ui/icons';
 import { useAuth } from '@/context/AuthContext';
 import { useVehicles } from '@/context/VehiclesContext';
 import { router, type Href } from 'expo-router';
-import { useAppTopPadding } from '@/hooks/useAppTopPadding';
+import { normalizePlate } from '@/services/lookupVehicleByPlate';
+import { vehiclePrimaryLabel } from '@/utils/vehicleLabel';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -53,10 +54,10 @@ export default function ProfileScreen() {
             <View style={styles.vehicleRow}>
               <VehicleAvatar
                 size="md"
-                accessibilityLabel={`Avatar do veículo ${primaryVehicle.model}`}
+                accessibilityLabel={`Avatar do veículo ${vehiclePrimaryLabel(primaryVehicle)}`}
               />
               <View style={styles.userInfo}>
-                <Text style={styles.userName}>{primaryVehicle.model}</Text>
+                <Text style={styles.userName}>{vehiclePrimaryLabel(primaryVehicle)}</Text>
                 <Text style={styles.userEmail}>{primaryVehicle.plate}</Text>
               </View>
             </View>

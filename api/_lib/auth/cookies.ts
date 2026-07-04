@@ -18,18 +18,25 @@ export function getSessionTokenFromRequest(req: VercelRequest): string | undefin
   return parseCookies(req)[SESSION_COOKIE_NAME];
 }
 
+/** SameSite=None + Secure no Vercel permite cookie em dev local (localhost → API produção). */
+function sessionCookieFlags(): { sameSite: 'Lax' | 'None'; secure: boolean } {
+  if (process.env.VERCEL) {
+    return { sameSite: 'None', secure: true };
+  }
+  const isProd = process.env.NODE_ENV === 'production';
+  return { sameSite: 'Lax', secure: isProd };
+}
+
+function formatSessionCookie(token: string, maxAge: number): string {
+  const { sameSite, secure } = sessionCookieFlags();
+  const secureFlag = secure ? '; Secure' : '';
+  return `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=${sameSite}; Max-Age=${maxAge}${secureFlag}`;
+}
+
 export function setSessionCookie(res: VercelResponse, token: string) {
-  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  res.setHeader(
-    'Set-Cookie',
-    `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}${secure}`,
-  );
+  res.setHeader('Set-Cookie', formatSessionCookie(token, SESSION_TTL_SECONDS));
 }
 
 export function clearSessionCookie(res: VercelResponse) {
-  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  res.setHeader(
-    'Set-Cookie',
-    `${SESSION_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`,
-  );
+  res.setHeader('Set-Cookie', formatSessionCookie('', 0));
 }

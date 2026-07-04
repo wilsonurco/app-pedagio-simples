@@ -30,7 +30,11 @@ export default function HomeScreen() {
   const vehicleModels = useMemo(
     () =>
       Object.fromEntries(
-        vehicles.map((vehicle) => [normalizePlate(vehicle.plate), vehicle.model]),
+        vehicles.map((vehicle) => {
+          const plate = normalizePlate(vehicle.plate);
+          const model = vehicle.model.trim();
+          return [plate, model.length >= 2 ? model : plate] as const;
+        }),
       ),
     [vehicles],
   );

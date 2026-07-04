@@ -15,8 +15,8 @@ function parseVehicleBody(body: unknown): { plate: string; model: string } | nul
   if (!body || typeof body !== 'object') return null;
   const payload = body as Record<string, unknown>;
   const plate = normalizePlate(String(payload.plate ?? ''));
+  if (plate.length !== 7) return null;
   const model = String(payload.model ?? '').trim();
-  if (plate.length !== 7 || model.length < 2) return null;
   return { plate, model };
 }
 
@@ -42,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!parsed) {
         sendJson(req, res, 422, {
           erro: 'DADOS_INVALIDOS',
-          mensagem: 'Informe placa e modelo válidos.',
+          mensagem: 'Informe uma placa válida.',
         });
         return;
       }

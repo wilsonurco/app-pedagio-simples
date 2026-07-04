@@ -29,7 +29,7 @@ export async function loadStoredVehicles(): Promise<Vehicle[] | null> {
     const vehicles = parsed
       .filter(isVehicle)
       .map(normalizeVehicle)
-      .filter((vehicle) => vehicle.plate.length === 7 && vehicle.model.length >= 2);
+      .filter((vehicle) => vehicle.plate.length === 7);
 
     const uniqueByPlate = new Map<string, Vehicle>();
     for (const vehicle of vehicles) {

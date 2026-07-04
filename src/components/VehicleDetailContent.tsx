@@ -8,6 +8,7 @@ import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
 import { useAccountHolder } from '@/context/AuthContext';
 import { type Vehicle } from '@/data/mock';
 import { useAppTopPadding } from '@/hooks/useAppTopPadding';
+import { resolveVehicleModel, vehiclePrimaryLabel } from '@/utils/vehicleLabel';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -28,9 +29,10 @@ export function VehicleDetailContent({ vehicle }: VehicleDetailContentProps) {
   const insets = useSafeAreaInsets();
   const topPadding = useAppTopPadding(spacing.sm);
   const holder = useAccountHolder();
+  const model = resolveVehicleModel(vehicle.model);
 
   const rows = [
-    { label: 'Modelo', value: vehicle.model },
+    ...(model.length >= 2 ? [{ label: 'Modelo', value: model }] : []),
     { label: 'Placa', value: vehicle.plate },
     { label: 'Titular', value: holder.name },
     { label: 'E-mail da conta', value: holder.email },
@@ -46,13 +48,16 @@ export function VehicleDetailContent({ vehicle }: VehicleDetailContentProps) {
       showsVerticalScrollIndicator={false}
     >
       <ScreenBackButton label="Meus veículos" fallback="/veiculos" />
-      <ScreenTitle title={vehicle.model} subtitle={`Placa ${vehicle.plate}`} />
+      <ScreenTitle
+        title={vehiclePrimaryLabel(vehicle)}
+        subtitle={model.length >= 2 ? `Placa ${vehicle.plate}` : undefined}
+      />
 
       <GroupedList>
         <View style={styles.hero}>
           <VehicleAvatar
             size="lg"
-            accessibilityLabel={`Avatar do veículo ${vehicle.model}`}
+            accessibilityLabel={`Avatar do veículo ${vehiclePrimaryLabel(vehicle)}`}
           />
         </View>
         {rows.map((row, index) => (

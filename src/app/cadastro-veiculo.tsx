@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,7 +14,7 @@ import { FormField } from '@/components/FormField';
 import { PayButton } from '@/components/PayButton';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
-import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
+import { GroupedList } from '@/components/ui/GroupedList';
 import { useVehicles } from '@/context/VehiclesContext';
 import { isFiscalTechEnabled } from '@/config/dataSource';
 import { usePassages } from '@/context/PassagesContext';
@@ -25,18 +24,25 @@ import {
   getInvalidPlateMessage,
   isCompletePlate,
   isValidBrazilianPlate,
-  lookupVehicleByPlate,
   normalizePlate,
 } from '@/services/lookupVehicleByPlate';
 import { navigateBack } from '@/utils/navigation';
-import { colors, fontSize, radius, spacing } from '@/theme/tokens';
+import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 type Status = 'idle' | 'saving' | 'success';
-type LookupStatus = 'idle' | 'loading' | 'found' | 'not_found' | 'duplicate' | 'invalid_format' | 'lookup_error';
+type PlateStatus = 'incomplete' | 'invalid_format' | 'duplicate' | 'ready';
 
 function formatPlate(value: string) {
   return normalizePlate(value).slice(0, 7);
+}
+
+function getPlateStatus(plate: string, hasVehicle: (plate: string) => boolean): PlateStatus {
+  if (!isCompletePlate(plate)) return 'incomplete';
+  const normalized = normalizePlate(plate);
+  if (!isValidBrazilianPlate(normalized)) return 'invalid_format';
+  if (hasVehicle(normalized)) return 'duplicate';
+  return 'ready';
 }
 
 export default function VehicleRegistrationScreen() {
@@ -44,83 +50,15 @@ export default function VehicleRegistrationScreen() {
   const { addVehicle, hasVehicle } = useVehicles();
   const { refreshDebts } = usePassages();
   const [plate, setPlate] = useState('');
-  const [model, setModel] = useState('');
   const [status, setStatus] = useState<Status>('idle');
-  const [lookupStatus, setLookupStatus] = useState<LookupStatus>('idle');
-  const [lookupMessage, setLookupMessage] = useState<string | undefined>();
+  const [submitError, setSubmitError] = useState<string | undefined>();
   const [registeredVehicle, setRegisteredVehicle] = useState<Vehicle | null>(null);
 
-  const isReady = lookupStatus === 'found' && model.trim().length >= 2;
-
-  useEffect(() => {
-    if (status === 'success' || status === 'saving') return;
-
-    if (!isCompletePlate(plate)) {
-      setModel('');
-      setLookupStatus('idle');
-      setLookupMessage(undefined);
-      return;
-    }
-
-    const normalizedPlate = normalizePlate(plate);
-
-    if (!isValidBrazilianPlate(normalizedPlate)) {
-      setModel('');
-      setLookupStatus('invalid_format');
-      setLookupMessage(getInvalidPlateMessage(normalizedPlate));
-      return;
-    }
-
-    if (hasVehicle(normalizedPlate)) {
-      setModel('');
-      setLookupStatus('duplicate');
-      setLookupMessage(undefined);
-      return;
-    }
-
-    let cancelled = false;
-    setLookupStatus('loading');
-    setLookupMessage(undefined);
-    setModel('');
-
-    lookupVehicleByPlate(normalizedPlate)
-      .then((result) => {
-        if (cancelled) return;
-
-        if (result.found) {
-          setModel(result.model);
-          setLookupStatus('found');
-          setLookupMessage(undefined);
-          return;
-        }
-
-        if (result.reason === 'invalid_format') {
-          setLookupStatus('invalid_format');
-          setLookupMessage(result.message);
-          return;
-        }
-
-        if (result.reason === 'api_error') {
-          setLookupStatus('lookup_error');
-          setLookupMessage(result.message);
-          return;
-        }
-
-        setLookupStatus('not_found');
-        setLookupMessage(undefined);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setLookupStatus('lookup_error');
-        setLookupMessage('Não foi possível consultar a placa. Tente novamente.');
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [plate, hasVehicle, status]);
+  const plateStatus = useMemo(() => getPlateStatus(plate, hasVehicle), [plate, hasVehicle]);
+  const isReady = plateStatus === 'ready';
 
   function handlePlateChange(text: string) {
+    setSubmitError(undefined);
     setPlate(formatPlate(text));
   }
 
@@ -128,14 +66,14 @@ export default function VehicleRegistrationScreen() {
     if (!isReady) return;
 
     const normalizedPlate = normalizePlate(plate);
-    const vehicle = { plate: normalizedPlate, model: model.trim() };
+    const vehicle: Vehicle = { plate: normalizedPlate, model: '' };
 
     setStatus('saving');
+    setSubmitError(undefined);
 
     try {
       const added = await addVehicle(vehicle);
       if (!added) {
-        setLookupStatus('duplicate');
         setStatus('idle');
         return;
       }
@@ -143,20 +81,18 @@ export default function VehicleRegistrationScreen() {
       setRegisteredVehicle(vehicle);
       setStatus('success');
 
-      // Débitos em background — não bloqueia a confirmação (FiscalTech pode demorar).
       if (isFiscalTechEnabled()) {
         void refreshDebts([normalizedPlate], {
-          vehicleModels: { [normalizedPlate]: vehicle.model },
+          vehicleModels: { [normalizedPlate]: normalizedPlate },
         }).catch(() => undefined);
       }
     } catch (error) {
-      setLookupStatus('lookup_error');
       if (error instanceof AuthApiError) {
-        setLookupMessage(error.message);
+        setSubmitError(error.message);
       } else if (error instanceof Error) {
-        setLookupMessage(error.message);
+        setSubmitError(error.message);
       } else {
-        setLookupMessage('Não foi possível salvar o veículo. Tente novamente.');
+        setSubmitError('Não foi possível salvar o veículo. Tente novamente.');
       }
       setStatus('idle');
     }
@@ -174,7 +110,7 @@ export default function VehicleRegistrationScreen() {
         </View>
         <Text style={styles.successTitle}>Veículo cadastrado</Text>
         <Text style={styles.successSubtitle}>
-          {registeredVehicle.model} • {registeredVehicle.plate} foi adicionado à sua conta.
+          Placa {registeredVehicle.plate} foi adicionada à sua conta.
         </Text>
 
         <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
@@ -199,10 +135,7 @@ export default function VehicleRegistrationScreen() {
         showsVerticalScrollIndicator={false}
       >
         <ScreenBackButton label="Meus veículos" fallback="/veiculos" />
-        <ScreenTitle
-          title="Novo veículo"
-          subtitle="Informe a placa para buscar os dados automaticamente"
-        />
+        <ScreenTitle title="Novo veículo" subtitle="Informe a placa do veículo" />
 
         <GroupedList>
           <FormField
@@ -214,22 +147,16 @@ export default function VehicleRegistrationScreen() {
             autoCorrect={false}
             maxLength={7}
           />
-          <LookupFeedback status={lookupStatus} message={lookupMessage} />
-          <GroupedDivider />
-          <FormField
-            label="Modelo"
-            value={model}
-            editable={false}
-            placeholder="Preenchido automaticamente"
-            autoCorrect={false}
-          />
+          <PlateFeedback status={plateStatus} plate={plate} />
         </GroupedList>
+
+        {submitError ? <Text style={styles.submitError}>{submitError}</Text> : null}
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
         <PayButton
           label="Cadastrar veículo"
-          loading={status === 'saving' || lookupStatus === 'loading'}
+          loading={status === 'saving'}
           disabled={!isReady}
           onPress={handleSubmit}
         />
@@ -238,50 +165,25 @@ export default function VehicleRegistrationScreen() {
   );
 }
 
-function LookupFeedback({ status, message }: { status: LookupStatus; message?: string }) {
-  if (status === 'idle') return null;
+function PlateFeedback({ status, plate }: { status: PlateStatus; plate: string }) {
+  if (status === 'incomplete') return null;
 
-  if (status === 'loading') {
-    return (
-      <View style={styles.feedbackRow}>
-        <ActivityIndicator size="small" color={colors.tint} />
-        <Text style={styles.feedbackLoading}>Consultando placa...</Text>
-      </View>
-    );
-  }
-
-  if (status === 'found') {
+  if (status === 'ready') {
     return (
       <View style={styles.feedbackRow}>
         <Check size={16} color={colors.systemGreen} strokeWidth={iconStroke} />
-        <Text style={styles.feedbackSuccess}>Veículo identificado</Text>
+        <Text style={styles.feedbackSuccess}>Placa válida</Text>
       </View>
     );
   }
 
   if (status === 'duplicate') {
-    return <Text style={styles.feedbackError}>Este veículo já está cadastrado na sua conta.</Text>;
-  }
-
-  if (status === 'invalid_format') {
-    return (
-      <Text style={styles.feedbackError}>
-        {message ?? 'Formato inválido. Use Mercosul (ABC1D23) ou antigo (ABC1234).'}
-      </Text>
-    );
-  }
-
-  if (status === 'lookup_error') {
-    return (
-      <Text style={styles.feedbackError}>
-        {message ?? 'Não foi possível consultar a placa. Tente novamente.'}
-      </Text>
-    );
+    return <Text style={styles.feedbackError}>Esta placa já está cadastrada na sua conta.</Text>;
   }
 
   return (
     <Text style={styles.feedbackError}>
-      Placa não encontrada. Verifique os dados e tente novamente.
+      {getInvalidPlateMessage(normalizePlate(plate))}
     </Text>
   );
 }
@@ -306,11 +208,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
     marginTop: -spacing.xs,
   },
-  feedbackLoading: {
-    ...fonts.regular,
-    fontSize: fontSize.footnote,
-    color: colors.secondaryLabel,
-  },
   feedbackSuccess: {
     ...fonts.medium,
     fontSize: fontSize.footnote,
@@ -323,6 +220,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.md,
     marginTop: -spacing.xs,
+  },
+  submitError: {
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.systemRed,
+    paddingHorizontal: spacing.sm,
   },
   footer: {
     paddingHorizontal: spacing.lg,
