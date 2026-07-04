@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.separator,
+    flexShrink: 0,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0 -1px 0 rgba(0, 0, 0, 0.04)' }
       : null),

@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.groupedBackground,
+    overflow: 'hidden',
   },
   header: {
     paddingHorizontal: spacing.lg,
@@ -187,17 +188,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.separator,
     zIndex: 1,
+    flexShrink: 0,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0 1px 0 rgba(0, 0, 0, 0.04)' }
       : null),
   },
   scroll: {
     flex: 1,
+    minHeight: 0,
   },
   content: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   stack: {
     gap: spacing.md,
