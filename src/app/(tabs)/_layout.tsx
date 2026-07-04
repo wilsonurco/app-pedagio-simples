@@ -34,24 +34,32 @@ export default function TabsLayout() {
   return (
     <AuthGuard>
       <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.tint,
-        tabBarInactiveTintColor: colors.tertiaryLabel,
-        tabBarLabelStyle: { ...fonts.medium, fontSize: 10 },
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopWidth: 0,
-          ...(Platform.OS === 'web'
-            ? {
-                paddingBottom: webTabBarInset,
-                height: 56 + webTabBarInset,
-              }
-            : {}),
-        },
-        sceneStyle: { backgroundColor: colors.groupedBackground },
-      }}
-    >
+        safeAreaInsets={{
+          top: insets.top,
+          bottom: Platform.OS === 'web' ? insets.bottom : 0,
+          left: insets.left,
+          right: insets.right,
+        }}
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: colors.tint,
+          tabBarInactiveTintColor: colors.tertiaryLabel,
+          tabBarLabelStyle: { ...fonts.medium, fontSize: 10 },
+          tabBarStyle: {
+            backgroundColor: colors.surface,
+            borderTopWidth: 0,
+            ...(Platform.OS === 'web'
+              ? {
+                  paddingBottom: webTabBarInset,
+                  height: 56 + webTabBarInset,
+                }
+              : {
+                  paddingBottom: 0,
+                }),
+          },
+          sceneStyle: { backgroundColor: colors.groupedBackground },
+        }}
+      >
       <Tabs.Screen
         name="index"
         options={{
