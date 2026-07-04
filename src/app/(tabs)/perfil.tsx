@@ -8,7 +8,7 @@ import { iconSize, iconStroke, LogOut } from '@/components/ui/icons';
 import { useAuth } from '@/context/AuthContext';
 import { useVehicles } from '@/context/VehiclesContext';
 import { router, type Href } from 'expo-router';
-import { normalizePlate } from '@/services/lookupVehicleByPlate';
+import { useAppTopPadding } from '@/hooks/useAppTopPadding';
 import { vehiclePrimaryLabel } from '@/utils/vehicleLabel';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
