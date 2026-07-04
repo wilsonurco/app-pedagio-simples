@@ -1,4 +1,5 @@
 import { getBffBaseUrl } from '@/config/dataSource';
+import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
 
 import type {
   AuthErrorBody,
@@ -19,7 +20,7 @@ async function authRequest<T>(options: AuthRequestOptions): Promise<T> {
   const baseUrl = getBffBaseUrl();
   const url = `${baseUrl}${options.path}`;
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     method: options.method,
     headers: {
       'Content-Type': 'application/json',

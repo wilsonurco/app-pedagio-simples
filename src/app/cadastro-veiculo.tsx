@@ -19,6 +19,7 @@ import { GroupedDivider, GroupedList } from '@/components/ui/GroupedList';
 import { useVehicles } from '@/context/VehiclesContext';
 import { isFiscalTechEnabled } from '@/config/dataSource';
 import { usePassages } from '@/context/PassagesContext';
+import { AuthApiError } from '@/services/auth/types';
 import { type Vehicle } from '@/data/mock';
 import {
   getInvalidPlateMessage,
@@ -140,19 +141,23 @@ export default function VehicleRegistrationScreen() {
       }
 
       setRegisteredVehicle(vehicle);
+      setStatus('success');
 
+      // Débitos em background — não bloqueia a confirmação (FiscalTech pode demorar).
       if (isFiscalTechEnabled()) {
-        await refreshDebts([normalizedPlate], {
+        void refreshDebts([normalizedPlate], {
           vehicleModels: { [normalizedPlate]: vehicle.model },
         }).catch(() => undefined);
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 900));
       }
-
-      setStatus('success');
-    } catch {
+    } catch (error) {
       setLookupStatus('lookup_error');
-      setLookupMessage('Não foi possível salvar o veículo. Tente novamente.');
+      if (error instanceof AuthApiError) {
+        setLookupMessage(error.message);
+      } else if (error instanceof Error) {
+        setLookupMessage(error.message);
+      } else {
+        setLookupMessage('Não foi possível salvar o veículo. Tente novamente.');
+      }
       setStatus('idle');
     }
   }

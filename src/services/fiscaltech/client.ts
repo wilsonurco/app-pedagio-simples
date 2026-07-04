@@ -1,4 +1,5 @@
 import { getBffBaseUrl } from '@/config/dataSource';
+import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
 
 import type {
   CancelarReservaResponse,
@@ -34,7 +35,7 @@ async function bffRequest<T>(options: RequestOptions): Promise<T> {
     headers['X-Idempotency-Key'] = options.idempotencyKey;
   }
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     method: options.method,
     headers,
     ...(options.withCredentials ? { credentials: 'include' as const } : {}),
