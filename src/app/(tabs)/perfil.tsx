@@ -1,18 +1,21 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LogoutButton } from '@/components/LogoutButton';
 import { ProfileMenuList } from '@/components/ProfileMenuList';
 import { ScreenTitle } from '@/components/ScreenTitle';
-import { Car, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
+import { Car, iconStroke } from '@/components/ui/icons';
+import { useSession } from '@/context/SessionContext';
 import { useVehicles } from '@/context/VehiclesContext';
-import { userProfile } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { name, email } = userProfile;
+  const { profile } = useSession();
   const { primaryVehicle: vehicle } = useVehicles();
+  const name = profile?.name ?? 'Visitante';
+  const email = profile?.email ?? 'Nenhuma conta conectada';
   const initial = name.charAt(0).toUpperCase();
 
   return (
@@ -54,15 +57,7 @@ export default function ProfileScreen() {
       {/* 4. Menu (sequência do print) */}
       <ProfileMenuList />
 
-      {/* 5. Sair da conta */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Sair da conta"
-        style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
-      >
-        <LogOut size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
-        <Text style={styles.logoutText}>Sair da conta</Text>
-      </Pressable>
+      <LogoutButton />
     </ScrollView>
   );
 }
@@ -125,21 +120,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(91, 46, 140, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logout: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.lg,
-    minHeight: 44,
-  },
-  logoutText: {
-    ...fonts.semibold,
-    fontSize: fontSize.body,
-    color: colors.systemRed,
-  },
-  pressed: {
-    opacity: 0.6,
   },
 });

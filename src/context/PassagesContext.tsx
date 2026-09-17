@@ -29,6 +29,7 @@ type PassagesContextValue = {
   getPassage: (id: string) => Passage | undefined;
   refreshDebts: (plates: string[], options?: RefreshOptions) => Promise<void>;
   markAsPaid: (ids: string[], paymentMethod?: string) => void;
+  clearPassages: () => void;
 };
 
 const PassagesContext = createContext<PassagesContextValue | null>(null);
@@ -114,6 +115,12 @@ export function PassagesProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const clearPassages = useCallback(() => {
+    setPassages([]);
+    setLoadError(null);
+    setLastConsultedPlate(null);
+  }, []);
+
   const value = useMemo(
     () => ({
       passages,
@@ -125,6 +132,7 @@ export function PassagesProvider({ children }: { children: ReactNode }) {
       getPassage,
       refreshDebts,
       markAsPaid,
+      clearPassages,
     }),
     [
       passages,
@@ -136,6 +144,7 @@ export function PassagesProvider({ children }: { children: ReactNode }) {
       getPassage,
       refreshDebts,
       markAsPaid,
+      clearPassages,
     ],
   );
 

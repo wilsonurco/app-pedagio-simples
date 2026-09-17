@@ -1,13 +1,15 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text as RNText, View } from 'react-native';
+import { ScrollView, StyleSheet, Text as RNText, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, List, Section } from '@expo/ui/swift-ui';
 import { listStyle } from '@expo/ui/swift-ui/modifiers';
 
-import { Car, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
+import { LogoutButton } from '@/components/LogoutButton';
+import { Car, iconStroke } from '@/components/ui/icons';
 import { ScreenHost } from '@/components/ios/ScreenHost';
+import { useSession } from '@/context/SessionContext';
 import { useVehicles } from '@/context/VehiclesContext';
-import { profileMenuItems, userProfile } from '@/data/mock';
+import { profileMenuItems } from '@/data/mock';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
@@ -20,8 +22,10 @@ const SF_ICONS = {
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { name, email } = userProfile;
+  const { profile } = useSession();
   const { primaryVehicle: vehicle } = useVehicles();
+  const name = profile?.name ?? 'Visitante';
+  const email = profile?.email ?? 'Nenhuma conta conectada';
   const initial = name.charAt(0).toUpperCase();
 
   return (
@@ -74,14 +78,7 @@ export default function ProfileScreen() {
         </List>
       </ScreenHost>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Sair da conta"
-        style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
-      >
-        <LogOut size={iconSize.sm} color={colors.systemRed} strokeWidth={iconStroke} />
-        <RNText style={styles.logoutText}>Sair da conta</RNText>
-      </Pressable>
+      <LogoutButton />
     </ScrollView>
   );
 }
@@ -153,20 +150,5 @@ const styles = StyleSheet.create({
   },
   menuHost: {
     minHeight: 220,
-  },
-  logout: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.lg,
-  },
-  logoutText: {
-    ...fonts.semibold,
-    fontSize: fontSize.body,
-    color: colors.systemRed,
-  },
-  pressed: {
-    opacity: 0.6,
   },
 });

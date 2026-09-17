@@ -16,6 +16,7 @@ type VehiclesContextValue = {
   vehicles: Vehicle[];
   primaryVehicle: Vehicle | undefined;
   addVehicle: (input: AddVehicleInput) => AddVehicleResult;
+  clearVehicles: () => void;
 };
 
 const VehiclesContext = createContext<VehiclesContextValue | null>(null);
@@ -59,11 +60,15 @@ export function VehiclesProvider({ children }: { children: ReactNode }) {
     return result;
   }, []);
 
+  const clearVehicles = useCallback(() => {
+    setVehicles([]);
+  }, []);
+
   const primaryVehicle = vehicles[0];
 
   const value = useMemo(
-    () => ({ vehicles, primaryVehicle, addVehicle }),
-    [vehicles, primaryVehicle, addVehicle],
+    () => ({ vehicles, primaryVehicle, addVehicle, clearVehicles }),
+    [vehicles, primaryVehicle, addVehicle, clearVehicles],
   );
 
   return <VehiclesContext.Provider value={value}>{children}</VehiclesContext.Provider>;
