@@ -6,6 +6,7 @@ import { listStyle } from '@expo/ui/swift-ui/modifiers';
 
 import { Car, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
 import { ScreenHost } from '@/components/ios/ScreenHost';
+import { useVehicles } from '@/context/VehiclesContext';
 import { profileMenuItems, userProfile } from '@/data/mock';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
@@ -19,7 +20,8 @@ const SF_ICONS = {
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { name, email, vehicle } = userProfile;
+  const { name, email } = userProfile;
+  const { primaryVehicle: vehicle } = useVehicles();
   const initial = name.charAt(0).toUpperCase();
 
   return (

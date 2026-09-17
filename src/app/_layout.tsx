@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { PassagesProvider } from '@/context/PassagesContext';
+import { VehiclesProvider } from '@/context/VehiclesContext';
 import { colors } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -18,6 +19,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <PassagesProvider>
+      <VehiclesProvider>
       <StatusBar style={Platform.OS === 'ios' ? 'dark' : 'dark'} />
       <Stack
         screenOptions={{
@@ -46,6 +48,7 @@ export default function RootLayout() {
         <Stack.Screen name="ajuda" options={{ presentation: 'card', gestureEnabled: true }} />
         <Stack.Screen name="passagem/[id]" options={{ presentation: 'card', gestureEnabled: true }} />
       </Stack>
+      </VehiclesProvider>
       </PassagesProvider>
     </SafeAreaProvider>
   );

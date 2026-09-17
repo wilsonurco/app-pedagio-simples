@@ -4,13 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfileMenuList } from '@/components/ProfileMenuList';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { Car, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
+import { useVehicles } from '@/context/VehiclesContext';
 import { userProfile } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { name, email, vehicle } = userProfile;
+  const { name, email } = userProfile;
+  const { primaryVehicle: vehicle } = useVehicles();
   const initial = name.charAt(0).toUpperCase();
 
   return (

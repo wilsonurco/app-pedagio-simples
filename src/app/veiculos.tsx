@@ -1,8 +1,8 @@
 import { ProfileDetailScreen } from '@/components/ProfileDetailScreen';
-import { userProfile } from '@/data/mock';
+import { useVehicles } from '@/context/VehiclesContext';
 
 export default function VehiclesScreen() {
-  const { vehicle } = userProfile;
+  const { vehicles } = useVehicles();
 
   return (
     <ProfileDetailScreen
@@ -10,8 +10,7 @@ export default function VehiclesScreen() {
       description="Veículos cadastrados na sua conta"
       icon="car"
       items={[
-        `${vehicle.model} • ${vehicle.plate}`,
-        vehicle.category,
+        ...vehicles.map((vehicle) => `${vehicle.model} • ${vehicle.plate}`),
         { label: 'Adicionar novo veículo', route: '/cadastro-veiculo' },
       ]}
     />

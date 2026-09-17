@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { router } from 'expo-router';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -10,15 +9,17 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Car, Check, iconSize, iconStroke, LogOut } from '@/components/ui/icons';
+import { Check, iconSize, iconStroke } from '@/components/ui/icons';
 
 import { FormField } from '@/components/FormField';
 import { PayButton } from '@/components/PayButton';
 import { ScreenBackButton } from '@/components/ScreenBackButton';
 import { ScreenTitle } from '@/components/ScreenTitle';
+import { useVehicles } from '@/context/VehiclesContext';
 import { vehicleCategories } from '@/data/mock';
 import { colors, fontSize, radius, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
+import { navigateBack } from '@/utils/navigation';
 
 type Status = 'idle' | 'saving' | 'success';
 
@@ -28,17 +29,26 @@ function formatPlate(value: string): string {
 
 export default function VehicleRegistrationScreen() {
   const insets = useSafeAreaInsets();
+  const { addVehicle } = useVehicles();
   const [plate, setPlate] = useState('');
   const [model, setModel] = useState('');
   const [categoryId, setCategoryId] = useState(vehicleCategories[0].id);
   const [status, setStatus] = useState<Status>('idle');
+  const [error, setError] = useState<string | null>(null);
 
   const isValid = plate.length >= 7 && model.trim().length >= 2;
 
   function handleSubmit() {
-    if (!isValid) return;
+    if (!isValid || status === 'saving') return;
+    setError(null);
     setStatus('saving');
-    setTimeout(() => setStatus('success'), 1200);
+    const result = addVehicle({ plate, model, categoryId });
+    if (!result.ok) {
+      setError(result.error);
+      setStatus('idle');
+      return;
+    }
+    setStatus('success');
   }
 
   if (status === 'success') {
@@ -53,7 +63,7 @@ export default function VehicleRegistrationScreen() {
         </Text>
 
         <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
-          <PayButton label="Concluir" onPress={() => router.back()} />
+          <PayButton label="Concluir" onPress={() => navigateBack({ fallback: '/veiculos' })} />
         </View>
       </View>
     );
@@ -73,7 +83,7 @@ export default function VehicleRegistrationScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <ScreenBackButton label="Meus veículos" />
+        <ScreenBackButton label="Meus veículos" fallback="/veiculos" />
         <ScreenTitle
           title="Novo veículo"
           subtitle="Cadastre um veículo na sua conta"
@@ -98,6 +108,12 @@ export default function VehicleRegistrationScreen() {
             autoCorrect={false}
           />
         </View>
+
+        {error ? (
+          <Text accessibilityRole="alert" style={styles.errorText}>
+            {error}
+          </Text>
+        ) : null}
 
         <Text style={styles.sectionTitle}>Categoria</Text>
         <View style={styles.card}>
@@ -187,6 +203,12 @@ const styles = StyleSheet.create({
   categoryLabelActive: {
     ...fonts.semibold,
     color: colors.tint,
+  },
+  errorText: {
+    ...fonts.regular,
+    fontSize: fontSize.footnote,
+    color: colors.systemRed,
+    paddingHorizontal: spacing.xs,
   },
   pressed: {
     opacity: 0.6,
