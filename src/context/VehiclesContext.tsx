@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
+import { isFiscalTechEnabled } from '@/config/dataSource';
 import { userProfile, vehicleCategories, type Vehicle } from '@/data/mock';
+import { normalizePlate } from '@/services/lookupVehicleByPlate';
 
 type AddVehicleInput = {
   plate: string;
@@ -12,25 +14,23 @@ type AddVehicleResult = { ok: true; vehicle: Vehicle } | { ok: false; error: str
 
 type VehiclesContextValue = {
   vehicles: Vehicle[];
-  primaryVehicle: Vehicle;
+  primaryVehicle: Vehicle | undefined;
   addVehicle: (input: AddVehicleInput) => AddVehicleResult;
 };
 
 const VehiclesContext = createContext<VehiclesContextValue | null>(null);
 
-function normalizePlate(plate: string): string {
-  return plate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-}
-
 export function VehiclesProvider({ children }: { children: ReactNode }) {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([userProfile.vehicle]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>(
+    isFiscalTechEnabled() ? [] : [userProfile.vehicle],
+  );
 
   const addVehicle = useCallback((input: AddVehicleInput): AddVehicleResult => {
     const plate = normalizePlate(input.plate);
-    const model = input.model.trim();
+    const model = input.model.trim() || plate;
 
-    if (plate.length < 7 || model.length < 2) {
-      return { ok: false, error: 'Informe placa e modelo válidos.' };
+    if (plate.length < 7) {
+      return { ok: false, error: 'Informe uma placa válida.' };
     }
 
     const category =
@@ -59,7 +59,7 @@ export function VehiclesProvider({ children }: { children: ReactNode }) {
     return result;
   }, []);
 
-  const primaryVehicle = vehicles[0] ?? userProfile.vehicle;
+  const primaryVehicle = vehicles[0];
 
   const value = useMemo(
     () => ({ vehicles, primaryVehicle, addVehicle }),

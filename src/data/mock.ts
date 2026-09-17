@@ -36,6 +36,9 @@ export type Passage = {
   paymentMethod?: string;
   lane?: string;
   gantry?: string;
+  disponivel?: boolean;
+  motivoIndisponivel?: string;
+  vencida?: boolean;
 };
 
 /** @deprecated Use Passage */

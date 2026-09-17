@@ -28,6 +28,8 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="consulta-placa" options={{ presentation: 'card', gestureEnabled: true }} />
+        <Stack.Screen name="consulta-resultado" options={{ presentation: 'card', gestureEnabled: true }} />
         <Stack.Screen
           name="pagar"
           options={{

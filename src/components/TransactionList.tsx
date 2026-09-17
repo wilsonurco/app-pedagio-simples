@@ -8,12 +8,14 @@ import { fonts } from '@/theme/typography';
 type TransactionListProps = {
   filter?: 'all' | 'pending' | 'paid';
   title?: string;
+  plate?: string;
 };
 
-export function TransactionList({ filter = 'all', title }: TransactionListProps) {
+export function TransactionList({ filter = 'all', title, plate }: TransactionListProps) {
   const { passages } = usePassages();
 
   const data = passages.filter((passage) => {
+    if (plate && passage.plate !== plate) return false;
     if (filter === 'pending') return passage.status === 'pending';
     if (filter === 'paid') return passage.status === 'paid';
     return true;

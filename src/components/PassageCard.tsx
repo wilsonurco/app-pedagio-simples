@@ -75,10 +75,18 @@ export function PassageCard({
         <Text
           style={[
             styles.status,
-            passage.status === 'pending' ? styles.statusPending : styles.statusPaid,
+            passage.disponivel === false
+              ? styles.statusUnavailable
+              : passage.status === 'pending'
+                ? styles.statusPending
+                : styles.statusPaid,
           ]}
         >
-          {passage.status === 'pending' ? 'Pendente' : 'Pago'}
+          {passage.disponivel === false
+            ? 'Indisponível'
+            : passage.status === 'pending'
+              ? 'Pendente'
+              : 'Pago'}
         </Text>
         {!selectable ? (
           <ChevronRight size={16} color={colors.tertiaryLabel} strokeWidth={iconStroke} />
@@ -180,5 +188,8 @@ const styles = StyleSheet.create({
   },
   statusPaid: {
     color: colors.systemGreen,
+  },
+  statusUnavailable: {
+    color: colors.systemRed,
   },
 });

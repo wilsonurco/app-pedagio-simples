@@ -45,9 +45,9 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.userInfo}>
           <Text style={styles.userName}>
-            {vehicle.model} • {vehicle.plate}
+            {vehicle ? `${vehicle.model} • ${vehicle.plate}` : 'Nenhum veículo cadastrado'}
           </Text>
-          <Text style={styles.userEmail}>{vehicle.category}</Text>
+          <Text style={styles.userEmail}>{vehicle?.category ?? 'Cadastre uma placa para acompanhar débitos'}</Text>
         </View>
       </View>
 

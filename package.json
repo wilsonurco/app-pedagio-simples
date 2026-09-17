@@ -37,6 +37,7 @@
   "devDependencies": {
     "@expo/ngrok": "npm:expo-cloudflared@^4.2.2",
     "@types/react": "~19.2.2",
+    "@vercel/node": "^5.10.2",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -46,6 +47,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "build": "expo export -p web",
+    "homolog:smoke": "node scripts/homolog-smoke.mjs",
+    "bff": "node scripts/local-bff.mjs",
     "lint": "expo lint"
   },
   "private": true

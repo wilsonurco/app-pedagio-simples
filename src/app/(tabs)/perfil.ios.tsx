@@ -51,9 +51,11 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.userInfo}>
           <RNText style={styles.userName}>
-            {vehicle.model} • {vehicle.plate}
+            {vehicle ? `${vehicle.model} • ${vehicle.plate}` : 'Nenhum veículo cadastrado'}
           </RNText>
-          <RNText style={styles.userEmail}>{vehicle.category}</RNText>
+          <RNText style={styles.userEmail}>
+            {vehicle?.category ?? 'Cadastre uma placa para acompanhar débitos'}
+          </RNText>
         </View>
       </View>
 
