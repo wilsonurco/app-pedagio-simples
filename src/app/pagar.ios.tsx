@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { router } from 'expo-router';
-import { StyleSheet, Text as RNText, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Pressable, StyleSheet, Text as RNText, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
@@ -20,36 +20,66 @@ import {
 } from '@expo/ui/swift-ui/modifiers';
 
 import { ScreenHost } from '@/components/ios/ScreenHost';
-import { formatBRL, paymentMethods, pendingAmount } from '@/data/mock';
+import { usePassages } from '@/context/PassagesContext';
+import { formatBRL, sumPassagesAmount } from '@/data/mock';
+import { navigateBack } from '@/utils/navigation';
 import { colors, fontSize, spacing } from '@/theme/tokens';
 import { fonts } from '@/theme/typography';
 
 const TINT = tintModifier(colors.tint);
 
-type Status = 'idle' | 'processing' | 'success';
-
-export default function PaymentScreen() {
+export default function PaymentPassagesScreen() {
   const insets = useSafeAreaInsets();
-  const [selected, setSelected] = useState(paymentMethods[0].id);
-  const [status, setStatus] = useState<Status>('idle');
+  const { selected: selectedParam } = useLocalSearchParams<{ selected?: string }>();
+  const { pendingPassages } = usePassages();
 
-  function handleConfirm() {
-    if (status === 'processing') return;
-    setStatus('processing');
-    setTimeout(() => setStatus('success'), 1400);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const pendingIds = useMemo(() => pendingPassages.map((p) => p.id), [pendingPassages]);
+
+  useEffect(() => {
+    if (selectedParam) {
+      const ids = selectedParam.split(',').filter((id) => pendingIds.includes(id));
+      setSelectedIds(ids.length > 0 ? ids : pendingIds);
+      return;
+    }
+    setSelectedIds(pendingIds);
+  }, [selectedParam, pendingIds.join(',')]);
+
+  const selectedPassages = useMemo(
+    () => pendingPassages.filter((p) => selectedIds.includes(p.id)),
+    [pendingPassages, selectedIds],
+  );
+
+  const total = sumPassagesAmount(selectedPassages);
+  const allSelected = pendingIds.length > 0 && selectedIds.length === pendingIds.length;
+
+  function togglePassage(id: string) {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
   }
 
-  if (status === 'success') {
+  function toggleAll() {
+    setSelectedIds(allSelected ? [] : pendingIds);
+  }
+
+  function handleContinue() {
+    if (selectedIds.length === 0) return;
+    router.push({
+      pathname: '/pagar-forma',
+      params: { selected: selectedIds.join(',') },
+    });
+  }
+
+  if (pendingPassages.length === 0) {
     return (
       <View style={[styles.container, styles.center, { paddingTop: insets.top }]}>
-        <RNText style={styles.successTitle}>Pagamento confirmado</RNText>
-        <RNText style={styles.successSubtitle}>
-          {formatBRL(pendingAmount)} foram pagos com sucesso.
-        </RNText>
-
+        <RNText style={styles.emptyTitle}>Nenhuma passagem pendente</RNText>
+        <RNText style={styles.emptySubtitle}>Você está em dia com seus pedágios.</RNText>
         <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
           <Host matchContents modifiers={[TINT, buttonStyle('borderedProminent'), controlSize('large')]}>
-            <Button label="Concluir" onPress={() => router.back()} />
+            <Button label="Voltar" onPress={() => navigateBack()} />
           </Host>
         </View>
       </View>
@@ -60,42 +90,51 @@ export default function PaymentScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
         <Host matchContents modifiers={[buttonStyle('borderless')]}>
-          <Button label="Fechar" systemImage="xmark" onPress={() => router.back()} />
+          <Button label="Fechar" systemImage="xmark" onPress={() => navigateBack()} />
         </Host>
-        <RNText style={styles.headerTitle}>Pagamento</RNText>
+        <RNText style={styles.headerTitle}>Passagens</RNText>
         <View style={styles.headerSpacer} />
+      </View>
+
+      <View style={styles.selectAllRow}>
+        <Pressable onPress={toggleAll} hitSlop={8}>
+          <RNText style={styles.selectAll}>
+            {allSelected ? 'Desmarcar todas' : 'Selecionar todas'}
+          </RNText>
+        </Pressable>
       </View>
 
       <ScreenHost>
         <Form>
           <Section>
-            <LabeledContent label="Total a pagar">
+            <LabeledContent label="Total selecionado">
               <Text
                 modifiers={[
                   font({ textStyle: 'title2', weight: 'bold' }),
                   foregroundStyle(colors.tint),
                 ]}
               >
-                {formatBRL(pendingAmount)}
+                {formatBRL(total)}
+              </Text>
+            </LabeledContent>
+            <LabeledContent label="Passagens">
+              <Text modifiers={[foregroundStyle({ type: 'hierarchical', style: 'secondary' })]}>
+                {selectedIds.length} de {pendingPassages.length}
               </Text>
             </LabeledContent>
           </Section>
 
-          <Section title="Forma de pagamento">
-            {paymentMethods.map((method) => (
+          <Section title="Pendentes">
+            {pendingPassages.map((passage) => (
               <Toggle
-                key={method.id}
-                label={method.label}
-                systemImage={
-                  method.icon === 'pix'
-                    ? 'brazilianrealsign.circle'
-                    : method.icon === 'credit-card'
-                      ? 'creditcard'
-                      : 'building.columns'
-                }
-                isOn={selected === method.id}
+                key={passage.id}
+                label={`${passage.plaza} • ${passage.highway}`}
+                systemImage={passage.type === 'free-flow' ? 'dot.radiowaves.left.and.right' : 'signpost.right'}
+                isOn={selectedIds.includes(passage.id)}
                 onIsOnChange={(isOn) => {
-                  if (isOn) setSelected(method.id);
+                  if (isOn !== selectedIds.includes(passage.id)) {
+                    togglePassage(passage.id);
+                  }
                 }}
               />
             ))}
@@ -106,9 +145,9 @@ export default function PaymentScreen() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
         <Host matchContents modifiers={[TINT, buttonStyle('borderedProminent'), controlSize('large')]}>
           <Button
-            label={status === 'processing' ? 'Processando...' : `Pagar ${formatBRL(pendingAmount)}`}
-            systemImage="bolt.fill"
-            onPress={handleConfirm}
+            label={selectedIds.length > 0 ? 'Ir para o pagamento' : 'Selecione passagens'}
+            systemImage="arrow.right.circle.fill"
+            onPress={handleContinue}
           />
         </Host>
       </View>
@@ -142,6 +181,16 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 60,
   },
+  selectAllRow: {
+    alignItems: 'flex-end',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xs,
+  },
+  selectAll: {
+    ...fonts.medium,
+    fontSize: fontSize.footnote,
+    color: colors.tint,
+  },
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
@@ -149,13 +198,13 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.separator,
   },
-  successTitle: {
+  emptyTitle: {
     ...fonts.bold,
-    fontSize: fontSize.title2,
+    fontSize: fontSize.title3,
     color: colors.label,
     textAlign: 'center',
   },
-  successSubtitle: {
+  emptySubtitle: {
     ...fonts.regular,
     fontSize: fontSize.body,
     color: colors.secondaryLabel,
